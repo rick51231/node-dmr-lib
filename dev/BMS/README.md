@@ -23,24 +23,24 @@ Requests radio to register battery.
  
  
 ### BMS_REGISTRATION
-Radio registration request. Can be triggered manually with the BMS_DISCOVERY or automatically when `Over-the-air battery management` flag is enabled on current channel via CPS of RM.
+Radio registration request. Can be triggered manually with the BMS_DISCOVERY or automatically when `Over-the-air battery management` flag is enabled on current channel via CPS of RM. Registration ID is random for every new registration.
 
-    IMPRESS: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x02 <3 random? bytes> <6 bytes battery serial>
-    NON-IMPRESS: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x01 <3 random? bytes>
+    IMPRESS: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x02 <3 bytes registration id> <6 bytes battery serial>
+    NON-IMPRESS: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x01 <3 bytes registration id>
 
 ### BMS_REGISTRATION_ACK
-PC confirms battery registraion, as i know for now.
+PC confirms battery registration. Hash calculated from BMS_REGISTRATION id bytes with BMS.getRegisterHash() function.
 
-    0x03 0x02 <3 random? bytes, but different than BMS_REGISTRATION>
+    0x03 0x02 <3 bytes registration hash>
     
 ### BMS_QUERY_REQUEST
 PC requests battery info.
 
-    Normal: 0x04 <2 bytes request ID, can be random?> 0x01 0x01 0x02
-    Extended: 0x04 <2 bytes request ID, can be random?> 0x01 0x02 0x01 0x02
+    Normal: 0x04 <2 bytes request ID, random> 0x01 0x01 0x02
+    Extended: 0x04 <2 bytes request ID, random> 0x01 0x02 0x01 0x02
     
 ### BMS_QUERY_REPLY
-Radio responds with the battery information. The most interesting and weird packet. As is see, health value is calculated from the battery capacity.
+Radio responds with the battery information. The most interesting and weird packet. As is see, health value is calculated from the battery capacity. Many parameters depends on first byte of the serial number (see Research->Fleet app).
 
 #### Main packet
 |Offset|Length|Example value|Comment|
@@ -107,6 +107,8 @@ Radio responds with the battery information. The most interesting and weird pack
  
  ### Fleet app
  I've tried to modify some bytes and replay it with the [nemesis](https://github.com/libnet/nemesis). Each section corresponding for it's offset, below goes value(hex)=>result. All below test are made with info from battery 737a84020050.
+ 
+ Next try were with the [radio-emulator.js](radio-emulator.js) script: it communicates with the fleet app installed on the windows VM via local network.
 
  Glossary:
  - D1 = Days since last reconditioning
@@ -115,6 +117,30 @@ Radio responds with the battery information. The most interesting and weird pack
  - C  = Present charge mAh
  - Cp = Potential capacity mAh
  - C3 = Total reconditioning cycles
+ 
+ 
+ #### Potential capacity table
+  |Serial first byte|Byte 10|Byte 11|Byte 13|Cp|
+  |---|---|---|---|---|
+  |0x03|0xEA|0x07|0xA9|2241|
+  |0x03|0xBA|0x07|0xA9|2295|
+  |0x03|0xBB|0x03|0xAA|6391|
+  |0x03|0xBB|0x03|0xB9|4857|
+  |0x03|0xBC|0x03|0xB9|4852|
+  |0x03|0xCB|0x03|0xB9|4777|
+  |0x03|0xBB|0x03|0xA9|4754|
+  |0x03|0xBB|0x04|0xA9|3749|
+  |0x03|0xBB|0x05|0xA9|3095|
+  |0x03|0xBB|0x06|0xA9|2635|
+  |0x03|0xBB|0x07|0xA9|2294|
+  |0x03|0xBB|0x08|0xA9|2203|
+  |0x03|0xBB|0x09|0xA9|1822|
+  |0x03|0xBB|0x17|0xA9|747|
+  |0x03|0xBB|0xF7|0xA9|-2145|
+  |0x03|0xBB|0x77|0xA9|148|
+  |0x03|0xBB|0x87|0xA9|-147|
+  |**0x04**|0xBC|0x03|0xB9|9959|
+  |**0x14**|0xBC|0x03|0xB9|9959|
  
  #### Offset 90
  - 0x01 => D2=2
