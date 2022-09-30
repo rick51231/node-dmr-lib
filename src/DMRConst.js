@@ -1,6 +1,10 @@
 "use strict";
 
 module.exports = Object.freeze({
+    _REPEATER_ID          : 200000202,
+    _SMS_CSBK_COUNT       : 2,
+
+
     FORMAT_IPSC     : 'ipsc',
     FORMAT_HOMEBREW : 'homebrew',
 
@@ -20,6 +24,14 @@ module.exports = Object.freeze({
     BMS_REGISTRATION_ACK     : 0x03,
     BMS_QUERY_REQUEST        : 0x04,
     BMS_QUERY_REPLY          : 0x05,
+
+    BMS_QUERY_TYPE_SHORT    : 0x1,
+    BMS_QUERY_TYPE_NORMAL   : 0x2,
+    BMS_QUERY_TYPE_EXTENDED : 0x3,
+
+    BMS_QUERY_TYPE_SHORT_HEX    : '010101',
+    BMS_QUERY_TYPE_NORMAL_HEX   : '010102',
+    BMS_QUERY_TYPE_EXTENDED_HEX : '01020102',
 
     BMS_QUERY_STATUS_OK                 : 0x00,
     BMS_QUERY_STATUS_FAILTURE           : 0x01,
@@ -60,7 +72,7 @@ module.exports = Object.freeze({
     LRRP_ProtocolVersionRequest : 0x14,
     LRRP_ProtocolVersionResponse : 0x15,
 
- //42 82 2c 66 62 3431
+    //42 82 2c 66 62 3431
     // https://git.safemobile.org/laurentiu.constantin/SafeNet/src/branch/master/SafeNetLib/Definitions.cs
     LRRP_REQUEST_PRECISION_TIME     : 0x51, //https://github.com/pboyd04/Moto.Net/blob/master/Moto.Net/Mototrbo/LRRP/ImmediateLocationRequestPacket.cs
     LRRP_REQUEST_PRECISION          : 0x50,
