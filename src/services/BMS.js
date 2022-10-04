@@ -139,7 +139,7 @@ class BMS {
                     bms.capacityPotential = a8;
                     bms.capacityCurrent = ((1000 * m) / (2048 * b9)) - chargeCalibration;
 
-                    bms.daysSinceCalibration = at - v;
+                    bms.daysSinceCalibration = at - v; //TODO: au - v ?
                     bms.daysSinceLastRemovalFromImpres = at - ah;
                 }
 
@@ -148,14 +148,25 @@ class BMS {
                     bms.partNumber = buffer.slice(11, 23).toString().replace(/\0/g, '');
                     let bb = buffer.readUInt8(24);
                     bms.softwareVersion = (bb >> 4) + 0.1 * (bb & 15); //TODO: check it
-                    bms.dateOfManufacture = this.decryptDate(buffer.readUInt16LE(25), key, key2);
+                    bms.dateOfManufacture = this.decryptDate(buffer.readUInt16LE(25), key, key2); //let c =
 
                     let o = BMS.decryptInt(buffer.readUInt16LE(27), 2, key);
                     let tmpDate = (new Date(bms.dateOfManufacture));
                     tmpDate.setDate(bms.dateOfManufacture.getDate() + o);
-                    bms.dateOfFirstUse = tmpDate;
+                    bms.dateOfFirstUse = tmpDate; // let n =
 
                     bms.health = Math.min(100, Math.round((bms.capacityPotential / bms.capacityRated) * 100));
+
+
+                    //More calculations:
+                    let ba = BMS.decryptInt(buffer.readUInt16LE(21 + 20), 2, key);
+                    let q = Math.max(1,  Math.floor(((new Date()).getTime() -  bms.dateOfFirstUse.getTime()) / 86400000));
+                    let bf = [];
+                    for(let i = 0; i < 10; i += 1) {
+                        bf[i] = buffer.readUInt8(21 + 20 + i);
+                    }
+
+                    bms.estimatedDaysUntilNextCalibration = Math.ceil(this.getReconditioningDays(bms.chargeRemaining, bf, q, bms.chargeCyclesImpress, bms.chargeCyclesNonImpress, bms.daysSinceCalibration, ba));
                 }
             } // if(code===DMRConst.BMS_QUERY_STATUS_OK) {
         }
@@ -199,8 +210,235 @@ class BMS {
         return buffer;
     }
 
-    static getReconditioningDays() {
+    static getReconditioningDays(ag, bf, q, w, bj, u, ba) {
+        let val1 = 0;
 
+        let objArray = [ag, bf, q, w, bj, u];
+
+        let index1 = 0;
+        let num1 = 12;
+        let num2 = 0;
+
+        loop: while(true) {
+            let num3 = 0.0;
+            let flag1 = false;
+            let num4 = 0.0;
+            let index2 = 0;
+            let flag2 = false;
+            let A_0 = 0;
+            let calibrationNeeded = false;
+            let num5 = 0;
+            let index3 = 0;
+            let num6 = 0.0;
+            let flag3 = false;
+            let flag4 = false;
+            let flag5 = false;
+            let flag6 = false;
+            let flag7 = false;
+            let num7 = 0;
+            let num8 = 0;
+
+            switch (num1)
+            {
+                case 0:
+                    if (!flag5)
+                    {
+                        ++index1;
+                        num1 = 41;
+                        continue;
+                    }
+                    num1 = 15;
+                    continue;
+                case 1:
+                case 20:
+                    let val2 = (30 - Math.min(30, u));
+
+                    num2 = Math.max(val1, val2); //TODO: should be Math.min(val1, val2)
+                    num1 = 21;
+                    continue;
+                case 2:
+                    if (index1 >= objArray.length)
+                    {
+                        num1 = 39;
+                        continue;
+                    }
+                    A_0 = objArray[index1];
+                    num1 = 5;
+                    continue;
+                case 3:
+                    num1 = 32;
+                    continue;
+                case 4:
+                case 24:
+                    index3 =  (num6 / 10.0);
+                    flag3 = bf[index3] !== 0;
+                    num1 = 36;
+                    continue;
+                case 5:
+                    num1 = 33; //TODO: !cc(A_0) ? 33 : 27;
+                    continue;
+                case 6:
+                    num1 = v !== 0 ? 28 : 8;
+                    continue;
+                case 7:
+                    if (!flag2)
+                    {
+                        num1 = 31;
+                        continue;
+                    }
+                    num3 +=  ag[index2] * (10 * index2 + 5);
+                    num6 += ag[index2];
+                    ++index2;
+                    num1 = 25;
+                    continue;
+                case 8:
+                    num1 = 38;
+                    continue;
+                case 9:
+                    num7 = 1; //TODO: !cd(A_0) ? 1 : 0;
+                    break;
+                case 10:
+                    if (calibrationNeeded)
+                    {
+                        num1 = 18;
+                        continue;
+                    }
+                    num6 = 0.0;
+                    num3 = 0.0;
+                    num4 = 0.0;
+                    num5 = 0;
+                    index2 = 0;
+                    num1 = 11;
+                    continue;
+                case 11:
+                case 25:
+                    flag2 = index2 < 10;
+                    num1 = 7;
+                    continue;
+                case 12:
+                case 41:
+                    num1 = 2;
+                    continue;
+                case 13:
+                    num6 = 95.0;
+                    num1 = 4;
+                    continue;
+                case 14:
+                case 23:
+                    flag6 = q > 0;
+                    num1 = 35;
+                    continue;
+                case 15:
+                    num1 = 6;
+                    continue;
+                case 16:
+                    num4 = (w + bj) / q;
+                    num1 = 37;
+                    continue;
+                case 17:
+
+                    val1 = num5 / num4;
+                    num1 = 1;
+                    continue;
+                case 18:
+                    num2 = val1;
+                    num1 = 19;
+                    continue;
+                case 19:
+                case 34:
+                    break loop;
+                case 21:
+                    break loop;
+                case 22:
+                case 37:
+                    flag4 = num4 > 0.001;
+                    num1 = 40;
+                    continue;
+                case 26:
+                    if (flag7)
+                    {
+                        num1 = 3;
+                        continue;
+                    }
+                    num1 = 32;
+                    continue;
+                case 27:
+                    num1 = 9;
+                    continue;
+                case 28:
+                    num8 = 1;
+                    flag7 = num8 !== 0;
+                    num1 = 26;
+                    continue;
+                case 29:
+
+                    num5 = ba / bf[index3];
+                    num1 = 14;
+                    continue;
+                case 30:
+                    if (flag1)
+                    {
+                        num1 = 13;
+                        continue;
+                    }
+                    num6 /= num3;
+                    num1 = 24;
+                    continue;
+                case 31:
+                    flag1 = num3 === 0.0;
+                    num1 = 30;
+                    continue;
+                case 32:
+                    num2 = val1;
+                    num1 = 34;
+                    continue;
+                case 33:
+                    num7 = 1;
+                    break;
+                case 35:
+                    if (flag6)
+                    {
+                        num1 = 16;
+                        continue;
+                    }
+                    num4 = w + bj;
+                    num1 = 22;
+                    continue;
+                case 36:
+                    if (!flag3)
+                    {
+                        num5 = 0;
+                        num1 = 23;
+                        continue;
+                    }
+                    num1 = 29;
+                    continue;
+                case 38:
+                    num8 = 1; //TODO: !cd(v) ? 1 : 0;
+                    flag7 = num8 !== 0;
+                    num1 = 26;
+                    continue;
+                case 39:
+                    calibrationNeeded = false; //TODO: IsCalibrationNeeded;
+                    num1 = 10;
+                    continue;
+                case 40:
+                    if (flag4)
+                    {
+                        num1 = 17;
+                        continue;
+                    }
+                    val1 = 1;
+                    num1 = 20;
+                    continue;
+                default:
+
+            }
+            flag5 = num7 !== 0;
+            num1 = 0;
+        }
+
+        return num2;
     }
 
     static getChargeCalibration(ah, ak, bg, bh, s, ay, a8) {
