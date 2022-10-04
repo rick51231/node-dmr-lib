@@ -13,7 +13,7 @@ Some development information can be found in [dev](dev) folder.
 
 
 ## Credits
-Thank you for these projects:
+Thanks to the following projects:
 - [go-dmr](https://github.com/pd0mz/go-dmr)
 - [MMDVMHost](https://github.com/g4klx/MMDVMHost)
 - [Moto.Net](https://github.com/pboyd04/Moto.Net)
