@@ -32,7 +32,7 @@ class CSBK extends Packet {
             return null;
 
         let packetCRC = buffer.readUInt16BE(10);
-        let bufferCRC = Packet.getCRC16(buffer.slice(0, 10), CSBK.CRC_MASK);
+        let bufferCRC = CRC16.compute(buffer.slice(0, 10)) ^ CSBK.CRC_MASK;
 
         if(packetCRC!==bufferCRC)
             return null;

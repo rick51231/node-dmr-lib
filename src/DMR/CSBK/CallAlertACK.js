@@ -3,7 +3,7 @@ const CSBK = require("../CSBK");
 class CallAlertACK extends CSBK {
     src_id = 0;
     dst_id = 0;
-    serviceOpcode = 0;
+    serviceOpcode = 0; // aka original alert packet opcode
 
     constructor() {
         super(CSBK.OPCODE_CALL_ALERT_ACK);

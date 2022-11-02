@@ -55,7 +55,6 @@ class DataHeader extends Packet {
                 break;
 
             default:
-                // packetClass = require('./CSBK/Raw');
                 return null;
         }
 

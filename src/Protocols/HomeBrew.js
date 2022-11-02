@@ -1,7 +1,7 @@
 "use strict";
 
 const DMRConst = require('../DMRConst');
-const DMRPacket = require('../data/Packet'); //TODO: rewrite it
+// const DMRPacket = require('../data/Packet'); //TODO: rewrite it
 
 //https://bm.pd0zry.nl/images/5/54/DMRplus_IPSC_Protocol_for_HB_repeater.pdf
 class HomeBrew {

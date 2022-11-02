@@ -1,5 +1,5 @@
 class IP4Packet {
-    static PROTOCOL_UDP = 0x17;
+    static PROTOCOL_UDP = 0x11;
     protocol = 0;
     identification = 0;
 
@@ -24,6 +24,7 @@ class IP4Packet {
         packet.dst_addr = buffer.readUInt32BE(16);
 
         if(packet.protocol === IP4Packet.PROTOCOL_UDP) {
+
             if(IP4Packet.getUDPChecksum(buffer)!==0)
                 return null;
 

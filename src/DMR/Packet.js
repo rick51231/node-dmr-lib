@@ -1,5 +1,3 @@
-const {CRC} = require("crc-full");
-
 class Packet {
     static DATA_TYPE_PI_HEADER = 0;
     static DATA_TYPE_VOICE_HEADER = 1;
