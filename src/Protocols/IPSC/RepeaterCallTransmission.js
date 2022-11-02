@@ -118,8 +118,8 @@ class RepeaterCallTransmission extends Packet {
         call.slot = buffer.readUInt8(8);
         call.status = buffer.readUInt16BE(9);
 
-        call.dst_id = (buffer.readUInt8(11) << 16) + buffer.readUInt16BE(12);
-        call.src_id = (buffer.readUInt8(14) << 16) + buffer.readUInt16BE(15);
+        call.src_id = (buffer.readUInt8(11) << 16) + buffer.readUInt16BE(12);
+        call.dst_id = (buffer.readUInt8(14) << 16) + buffer.readUInt16BE(15);
 
         call.callType = buffer.readUInt8(17);
         call.callPriority = buffer.readUInt8(18);
@@ -145,11 +145,11 @@ class RepeaterCallTransmission extends Packet {
         buffer.writeUInt8(this.slot, 8);
         buffer.writeUInt8(this.status, 9);
 
-        buffer.writeUInt8((this.dst_id>>16) & 0xFF, 11); //src HI
-        buffer.writeUInt16BE(this.dst_id & 0xFFFF, 12);
+        buffer.writeUInt8((this.src_id>>16) & 0xFF, 11); //src HI
+        buffer.writeUInt16BE(this.src_id & 0xFFFF, 12);
 
-        buffer.writeUInt8((this.src_id>>16) & 0xFF, 14); //src HI
-        buffer.writeUInt16BE(this.src_id & 0xFFFF, 15);
+        buffer.writeUInt8((this.dst_id>>16) & 0xFF, 14); //src HI
+        buffer.writeUInt16BE(this.dst_id & 0xFFFF, 15);
 
         buffer.writeUInt8(this.callType, 17);
         buffer.writeUInt8(this.callPriority, 18);

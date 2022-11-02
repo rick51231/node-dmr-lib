@@ -165,7 +165,7 @@ class DMRPayload {
 
         if(this.slotTypePresent) {
             let slotTypeOffset = 9 + this.getDataSize();
-            let byte = ((this.colorCode<<4) & 0b111100000) | (this.dataType & 0b00001111);
+            let byte = ((this.colorCode<<4) & 0b11110000) | (this.dataType & 0b00001111);
             buffer.writeUInt8(byte, slotTypeOffset);
         }
 

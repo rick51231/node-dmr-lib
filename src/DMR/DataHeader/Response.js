@@ -66,7 +66,7 @@ class Response extends DataHeader {
 
         buffer.writeUInt8(b8, 8);
 
-        let b9 = (this.sendSequenceNumber & 0b00000111) | ((this.type & 0b00111000) << 3);
+        let b9 = (this.sendSequenceNumber & 0b00000111) | ((this.type << 3) & 0b00111000);
 
         buffer.writeUInt8(b9, 9);
 

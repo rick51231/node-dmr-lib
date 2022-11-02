@@ -3,7 +3,7 @@ const Packet = require('./Packet');
 
 class PrivateData extends VoiceDataCall {
     constructor() {
-        super(Packet.GROUP_DATA);
+        super(Packet.PRIVATE_DATA);
     }
 }
 

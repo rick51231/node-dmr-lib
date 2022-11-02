@@ -7,7 +7,9 @@ module.exports.MasterRegReq = require('./MasterRegReq');
 module.exports.PeerListReply = require('./PeerListReply');
 
 module.exports.PrivateData = require('./PrivateData');
+module.exports.PrivateVoice = require('./PrivateVoice');
 module.exports.GroupData = require('./GroupData');
+module.exports.GroupVoice = require('./GroupVoice');
 
 module.exports.RepeaterCallTransmission = require('./RepeaterCallTransmission');
 module.exports.RepeaterCallControl = require('./RepeaterCallControl');
