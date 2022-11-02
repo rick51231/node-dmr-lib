@@ -113,6 +113,15 @@ class DMRPayload {
 
 
         let data = buffer.slice(PDU_OFFSET, PDU_OFFSET + (dmr.pduDataType === DMRPayload.DATA_TYPE_CONFIRMED_DATA_CONT ? 18 : 12)); //TODO: 12 rate1/2, 18 rate3/4;
+
+        //Idk why, but in IPSC checksum is on the end of the packet
+        if (dmr.pduDataType === DMRPayload.DATA_TYPE_CONFIRMED_DATA_CONT && dmr.dataSizeBits === 144) {
+            let start = data.slice(16, 18);
+            let end = data.slice(0, 16);
+
+            data = Buffer.concat([start, end]);
+        }
+
         dmr.data = DMR.Packet.from(data, dmr.dataType);
 
 
@@ -169,7 +178,8 @@ class DMRPayload {
             buffer.writeUInt8(byte, slotTypeOffset);
         }
 
-        buffer.write(this.data.getBuffer().toString('hex').get, PDU_OFFSET, 'hex');
+        //TODO: do we need to move checksum to end in the DATA_TYPE_CONFIRMED_DATA_CONT packets
+        buffer.write(this.data.getBuffer().toString('hex'), PDU_OFFSET, 'hex');
 
         return buffer;
     }
