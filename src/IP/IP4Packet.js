@@ -1,3 +1,5 @@
+const MotorolaNetwork = require('../Motorola/Network');
+
 class IP4Packet {
     static PROTOCOL_UDP = 0x11;
     protocol = 0;
@@ -35,10 +37,117 @@ class IP4Packet {
 
             packet.payload = buffer.subarray(28, 28+udpLen-8); //8 = udp header size
         } else {
-            return null; //
+            return null;
         }
 
         return packet;
+    }
+
+    static fromCompressedUDPDMRStandart(buffer, dataHeader) {
+        let packet = new IP4Packet();
+
+        packet.protocol = IP4Packet.PROTOCOL_UDP;
+        packet.identification = buffer.readUInt16BE(0);
+
+        let b2 = buffer.readUInt8(2);
+        let SAID = b2 >> 4;
+        let DAID = b2 & 0xF;
+
+        let sourcePrefix = 0;
+        let destPrefix = 0;
+
+        if(SAID===MotorolaNetwork.ADDRESSID_RADIO) {
+            sourcePrefix = MotorolaNetwork.NETWORK_RADIO;
+        } else if(SAID===MotorolaNetwork.ADDRESSID_SERVER) {
+            sourcePrefix = MotorolaNetwork.NETWORK_SERVER;
+        } else {
+            // throw new Error("Invalid SAID "+SAID+" for buffer "+buffer.toString('hex'));
+            return null;
+        }
+
+        if(DAID===MotorolaNetwork.ADDRESSID_RADIO) {
+            destPrefix = MotorolaNetwork.NETWORK_RADIO;
+        } else if(DAID===MotorolaNetwork.ADDRESSID_SERVER) {
+            destPrefix = MotorolaNetwork.NETWORK_SERVER;
+        } else if(DAID===MotorolaNetwork.ADDRESSID_GROUP) {
+            destPrefix = MotorolaNetwork.NETWORK_GROUP;
+        } else {
+            // throw new Error("Invalid DAID "+DAID+" for buffer "+buffer.toString('hex'));
+            return null;
+        }
+
+        packet.src_addr = (sourcePrefix << 24) | dataHeader.src_id;
+        packet.dst_addr = (destPrefix << 24) | dataHeader.dst_id;
+
+
+        //Ignoring OP1 & OP2 ?
+        let SPID = buffer.readUInt8(3);
+        let DPID = buffer.readUInt8(4);
+
+        if(SPID>>7 > 0 || DPID>>7 > 0) {
+            throw new Error("Found OP "+SPID+"-"+DPID+" for buffer "+buffer.toString('hex'));
+        }
+
+        SPID &= 0x7F;
+        DPID &= 0x7F;
+        let dataOffset = 5;
+
+        if(SPID===0) {
+            packet.src_port = buffer.readUInt16BE(5);
+            dataOffset += 2;
+        } else {
+            packet.src_port = MotorolaNetwork.PortID2Port(SPID, true);
+        }
+
+        if(DPID===0) {
+            packet.dst_port = buffer.readUInt16BE(SPID === 0 ? 5 : 7);
+            dataOffset += 2;
+        } else {
+            packet.dst_port = MotorolaNetwork.PortID2Port(DPID, true);
+        }
+
+        packet.payload = buffer.slice(dataOffset, buffer.length);
+
+        return packet;
+    }
+
+    getBuffer() {
+        let ipHeaderSize = 20; //5 = 20 ???
+        let udpSize = this.payload.length + 8; //udp size  (data size  + udp header size)
+        let totalSize = udpSize + ipHeaderSize; //total packet size (udp size + ipv4 header size)
+
+        let buffer = Buffer.alloc(totalSize);
+
+        //IP header
+        buffer.writeUInt8((0x4 << 4) | (ipHeaderSize/4), 0); //ip version (4) + header size;
+        buffer.writeUInt8(0x00, 1); //.... ..01 = Explicit Congestion Notification: ECN-Capable transport codepoint '01' (1)
+        buffer.writeUInt16BE(totalSize, 2); //Total size
+        buffer.writeUInt16BE( this.identification, 4); //Identification  //TMS: old 0x00, used to prevent messages resending
+        buffer.writeUInt16BE(0x00, 6); //Fragment offset + Flags
+        buffer.writeUInt8(0x40, 8); //TTL
+        buffer.writeUInt8(0x11, 9); //Protocol 0x11 (17) = UDP
+        buffer.writeUInt16BE(0x00, 10); //Header checksum (will be added later)
+        buffer.writeUInt32BE(this.src_addr>>>0, 12); //Src
+        buffer.writeUInt32BE(this.dst_addr>>>0, 16); //Dst
+
+
+        let headerChk = IP4Packet.getIPChecksum(buffer);
+        buffer.writeUInt16BE(headerChk, 10); //Header checksum
+
+        //UDP header
+        buffer.writeUInt16BE(this.src_port, 20); //Src port
+        buffer.writeUInt16BE(this.dst_port, 22); //DST port
+        buffer.writeUInt16BE(udpSize, 24); //udp size
+        buffer.writeUInt16BE(0x00, 26); //udp checksum  (will be added later)
+
+        //Data
+        buffer.write(this.payload.toString('hex'), 28, 'hex'); //TODO: более красиво записывать
+
+        let udpChk = IP4Packet.getUDPChecksum(buffer);
+
+        buffer.writeUInt16BE(udpChk, 26); //udp checksum
+
+        return buffer;
     }
 
     static getIPChecksum(buffer) {
