@@ -1,4 +1,5 @@
-class IP4 {
+class IP4Packet {
+    static PROTOCOL_UDP = 0x17;
     protocol = 0;
     identification = 0;
 
@@ -10,12 +11,11 @@ class IP4 {
 
     payload = Buffer.alloc(0);
 
-
     static from(buffer) {
-        let packet = new IP4();
+        let packet = new IP4Packet();
 
-        if(IP4.getIPChecksum(buffer)!==0) //Invalid IP checksum
-            return undefined;
+        if(IP4Packet.getIPChecksum(buffer)!==0) //Invalid IP checksum
+            return null;
 
         packet.protocol = buffer.readUInt8(9);
         packet.identification = buffer.readUInt16BE(4);
@@ -23,16 +23,18 @@ class IP4 {
         packet.src_addr = buffer.readUInt32BE(12);
         packet.dst_addr = buffer.readUInt32BE(16);
 
-        if(packet.protocol === 0x17) {
-            if(IP4.getUDPChecksum(buffer)!==0)
-                return undefined;
+        if(packet.protocol === IP4Packet.PROTOCOL_UDP) {
+            if(IP4Packet.getUDPChecksum(buffer)!==0)
+                return null;
 
             packet.src_port = buffer.readUInt16BE(20);
             packet.dst_port = buffer.readUInt16BE(22);
 
             let udpLen = buffer.readUInt16BE(24);
 
-            packet.payload = buffer.slice(28, 28+udpLen-8); //8 = udp header size
+            packet.payload = buffer.subarray(28, 28+udpLen-8); //8 = udp header size
+        } else {
+            return null; //
         }
 
         return packet;
@@ -70,7 +72,7 @@ class IP4 {
         udpChk += 17; //Protocol udp
         udpChk += udpSize;
 
-        for(let i = 0; i<udpSize; i+=2) { //Todo: if size %2 == 1
+        for(let i = 0; i<udpSize; i+=2) {
             if(i === udpSize-1 && udpSize % 2 === 1) {
                 udpChk += buffer.readUInt8(ipHeaderSize + i) << 8;
             } else {
@@ -88,4 +90,4 @@ class IP4 {
     }
 }
 
-module.exports = IP4;
+module.exports = IP4Packet;
