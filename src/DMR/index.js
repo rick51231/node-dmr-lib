@@ -13,4 +13,4 @@ module.exports.DataHeader.Unconfirmed = require('./DataHeader/Unconfirmed');
 
 module.exports.Raw = require('./Raw');
 module.exports.Packet = require('./Packet');
-module.exports.DataBlock = require('./Util/DataBlock');
+module.exports.Util = require('./Util');
