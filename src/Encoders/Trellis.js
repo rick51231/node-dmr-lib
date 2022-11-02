@@ -25,7 +25,7 @@ class Trellis {
         let points = this.dibitsToPoints(dibits);
 
         let [tribits, failPos] = this.checkCode(points);
-        console.log(failPos);
+
         if(failPos===999)
             return this.tribitsToBits(tribits);
 

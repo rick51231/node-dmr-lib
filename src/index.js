@@ -1,6 +1,6 @@
 module.exports = {
     data: require('./data'),
-    encoders: require('./encoders'),
+    Encoders: require('./Encoders'),
     services: require('./services'),
     transport: require('./transport'),
     DMRCoders: require('./DMRCoders'),
