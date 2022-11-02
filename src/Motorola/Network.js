@@ -2,7 +2,7 @@ class Network {
     static ADDRESSID_RADIO     = 0x00;
     static ADDRESSID_SERVER    = 0x01;
     static ADDRESSID_GROUP     = 0x02;
-    static ADDRESSID_BLUETOOTH = 0x03;
+    static ADDRESSID_BLUETOOTH = 0x03; //Idk about this
 
     static NETWORK_RADIO  = 12;  // 0x0C
     static NETWORK_SERVER = 13;  // 0x0D
@@ -22,6 +22,32 @@ class Network {
     static PORT_TELEMETRY = 4008;
 
 
+    static AddressID2Network(addressId) {
+        switch(addressId) {
+            case Network.ADDRESSID_RADIO:
+                return Network.NETWORK_RADIO;
+            case Network.ADDRESSID_SERVER:
+                return Network.NETWORK_SERVER;
+            case Network.ADDRESSID_GROUP:
+                return Network.NETWORK_GROUP;
+        }
+
+        return null;
+    }
+
+    static Network2AddressID(network) {
+        switch(network) {
+            case Network.NETWORK_RADIO:
+                return Network.ADDRESSID_RADIO;
+            case Network.NETWORK_SERVER:
+                return Network.ADDRESSID_SERVER;
+            case Network.NETWORK_GROUP:
+                return Network.ADDRESSID_GROUP;
+        }
+
+        return null;
+    }
+
     static PortID2Port(portId, isNewFormat) {
         if(isNewFormat)
             portId -= Network.PORTID_NEW_CONSTANT;
@@ -30,11 +56,11 @@ class Network {
             case Network.PORTID_LRRP:
                 return Network.PORT_LRRP;
             case Network.PORTID_ARS:
-                return Network.PORTID_ARS;
+                return Network.PORT_ARS;
             case Network.PORTID_TMS:
-                return Network.PORTID_TMS;
+                return Network.PORT_TMS;
             case Network.PORTID_TELEMETRY:
-                return Network.PORTID_TELEMETRY;
+                return Network.PORT_TELEMETRY;
         }
 
         return null;

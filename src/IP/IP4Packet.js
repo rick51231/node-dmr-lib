@@ -43,7 +43,48 @@ class IP4Packet {
         return packet;
     }
 
-    static fromCompressedUDPDMRStandart(buffer, dataHeader) {
+    static fromCompressedUDPAdvantage(buffer, src_id, dst_id, proprietaryHeader) {
+        let packet = new IP4Packet();
+
+        packet.protocol = IP4Packet.PROTOCOL_UDP;
+        packet.identification = proprietaryHeader.ipIdent;
+
+        let sourcePrefix = MotorolaNetwork.AddressID2Network(proprietaryHeader.SAID);
+
+        if(sourcePrefix===null)
+            return null;
+
+        let destPrefix = MotorolaNetwork.AddressID2Network(proprietaryHeader.DAID);
+
+        if(destPrefix===null)
+            return null;
+
+        packet.src_addr = (sourcePrefix << 24) | src_id;
+        packet.dst_addr = (destPrefix << 24) | dst_id;
+
+
+        let dataOffset = 0;
+
+        if(proprietaryHeader.SPID===0) {
+            packet.src_port = buffer.readUInt16BE(0);
+            dataOffset += 2;
+        } else {
+            packet.src_port = MotorolaNetwork.PortID2Port(proprietaryHeader.SPID, false);
+        }
+
+        if(proprietaryHeader.DPID===0) {
+            packet.dst_port = buffer.readUInt16BE(proprietaryHeader.SPID === 0 ? 0 : 2);
+            dataOffset += 2;
+        } else {
+            packet.dst_port = MotorolaNetwork.PortID2Port(proprietaryHeader.DPID, false);
+        }
+
+        packet.payload = buffer.subarray(dataOffset);
+
+        return packet;
+    }
+
+    static fromCompressedUDPDMRStandart(buffer, src_id, dst_id) {
         let packet = new IP4Packet();
 
         packet.protocol = IP4Packet.PROTOCOL_UDP;
@@ -53,32 +94,20 @@ class IP4Packet {
         let SAID = b2 >> 4;
         let DAID = b2 & 0xF;
 
-        let sourcePrefix = 0;
-        let destPrefix = 0;
 
-        if(SAID===MotorolaNetwork.ADDRESSID_RADIO) {
-            sourcePrefix = MotorolaNetwork.NETWORK_RADIO;
-        } else if(SAID===MotorolaNetwork.ADDRESSID_SERVER) {
-            sourcePrefix = MotorolaNetwork.NETWORK_SERVER;
-        } else {
-            // throw new Error("Invalid SAID "+SAID+" for buffer "+buffer.toString('hex'));
+
+        let sourcePrefix = MotorolaNetwork.AddressID2Network(SAID);
+
+        if(sourcePrefix===null)
             return null;
-        }
 
-        if(DAID===MotorolaNetwork.ADDRESSID_RADIO) {
-            destPrefix = MotorolaNetwork.NETWORK_RADIO;
-        } else if(DAID===MotorolaNetwork.ADDRESSID_SERVER) {
-            destPrefix = MotorolaNetwork.NETWORK_SERVER;
-        } else if(DAID===MotorolaNetwork.ADDRESSID_GROUP) {
-            destPrefix = MotorolaNetwork.NETWORK_GROUP;
-        } else {
-            // throw new Error("Invalid DAID "+DAID+" for buffer "+buffer.toString('hex'));
+        let destPrefix = MotorolaNetwork.AddressID2Network(DAID);
+
+        if(destPrefix===null)
             return null;
-        }
 
-        packet.src_addr = (sourcePrefix << 24) | dataHeader.src_id;
-        packet.dst_addr = (destPrefix << 24) | dataHeader.dst_id;
-
+        packet.src_addr = (sourcePrefix << 24) | src_id;
+        packet.dst_addr = (destPrefix << 24) | dst_id;
 
         //Ignoring OP1 & OP2 ?
         let SPID = buffer.readUInt8(3);

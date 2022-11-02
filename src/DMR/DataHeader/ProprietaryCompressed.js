@@ -11,6 +11,7 @@ class ProprietaryCompressed extends Proprietary {
     // extHeader1; // UInt16BE bytes 4-5
     // extHeader2; // UInt16BE bytes 6-7
     userData = Buffer.alloc(3);
+    payload = Buffer.alloc(4);
 
     constructor() {
         super(Proprietary.OPCODE_COMPRESSED);
@@ -33,7 +34,12 @@ class ProprietaryCompressed extends Proprietary {
         header.DPID = (b1 & 0b00001111);
         header.SPID = (b1 & 0b11110000) >>> 4;
 
+        // header.extHeader1 = buffer.readUInt16BE(4);
+        // header.extHeader2 = buffer.readUInt16BE(6);
+
+
         header.ipIdent = buffer.readUInt16BE(2);
+        header.payload = buffer.subarray(0, 4);
         header.userData = buffer.subarray(4, 7);
 
         return header;

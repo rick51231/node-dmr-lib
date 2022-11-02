@@ -21,7 +21,11 @@ class DataBlock {
         if(this.remainPackets===0)
             return false;
 
-        if(packet instanceof DMR.Raw && packet.dataType === DMR.Packet.DATA_TYPE_UNCONFIRMED_DATA_CONT) {
+        if(packet instanceof DMR.DataHeader.ProprietaryCompressed) {  //TODO: validate something else ?
+            this.secondDataHeader = packet;
+            this.dataBuffer.push(packet.payload);
+            this.dataBuffer.push(packet.userData);
+        } else if(packet instanceof DMR.Raw && packet.dataType === DMR.Packet.DATA_TYPE_UNCONFIRMED_DATA_CONT) {
             this.dataBuffer.push(packet.data);
 
         } else if(packet instanceof DMR.Raw && packet.dataType === DMR.Packet.DATA_TYPE_CONFIRMED_DATA_CONT) {
@@ -40,9 +44,6 @@ class DataBlock {
                 return false;
             }
             this.dataBuffer.push(rawPart);
-        } else if(packet instanceof DMR.DataHeader.ProprietaryCompressed) { //TODO: validate something else ?
-            this.secondDataHeader = packet;
-            this.dataBuffer.push(packet.userData);
         } else {
             return false;
         }
@@ -58,13 +59,21 @@ class DataBlock {
 
         let buffer = Buffer.concat(this.dataBuffer);
 
+        let startOffset = 0;
+        let endCrcOffset = buffer.length-DataBlock.CRC_SIZE;
+
+        if(this.secondDataHeader!==null && this.secondDataHeader instanceof DMR.DataHeader.ProprietaryCompressed) {
+            startOffset += 4;
+            endCrcOffset -= 1;
+        }
+
         let bufferCrc = buffer.readUInt32LE(buffer.length-DataBlock.CRC_SIZE);
-        let computedCrc = CRC32.compure(buffer.subarray(0, buffer.length-DataBlock.CRC_SIZE));
+        let computedCrc = CRC32.compure(buffer.subarray(0, endCrcOffset));
 
         if(bufferCrc!==computedCrc)
             return null;
 
-        return buffer.subarray(0, buffer.length-DataBlock.CRC_SIZE-this.dataHeader.padOctetCount);
+        return buffer.subarray(startOffset, buffer.length-DataBlock.CRC_SIZE-this.dataHeader.padOctetCount);
     }
 
     static createDataBlock(buffer, src_id, dst_id, dstIsGroup, serviceAccessPoint = DMR.DataHeader.SAP_IP_PACKET) {
