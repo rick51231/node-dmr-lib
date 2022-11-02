@@ -1,12 +1,32 @@
 # node-dmr-lib
 Motorola MotoTRBO DMR protocols research project.
 
-#### Supported services:
+#### Supported protocols:
 - ARS (Automatic Registration Service)
 - LRRP (Location Request Response Protocol)
 - TMS (Text Message Service)
 - BMS (IMPRES Battery Management)
+- HomeBrew (HBLink repeater protocol)
+- IPSC (IP Site Connect)
+- XCMP
+- XNL 
 
+#### Supported encodings/checksums:
+- BPTC 196/96
+- CRC 9/16/32
+- Hamming
+- Trellis
+
+#### Supported IP features:
+- UDP/IP4 over dmr (plain)
+- UDP/IP4 over dmr (DMR Standart header compression)
+- UDP/IP4 over dmr (Advantage header compression)
+
+#### Supported DMR blocks:
+- DataHeader (Response, Confirmed, Unconfirmed, Proprietary, ProprietaryCompressed)
+- CSBK (CallAlertACK, CallEmergency, Preamble)
+- Rate 1/2 and 3/4 data
+- DataBlock with CRC32 (encapsulates IP packets)
 
 Some development information can be found in [dev](dev) folder.
 
