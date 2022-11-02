@@ -1,6 +1,10 @@
 "use strict";
 
-const DMRUtil = require('../DMRUtil');
+const Iconv  = require('iconv').Iconv;
+
+//TODO: refactor ?
+const decode_sms = (new Iconv('UTF-16LE', 'UTF-8')).convert;
+const encode_sms = (new Iconv('UTF-8', 'UTF-16LE')).convert;
 
 // public enum MessageType
 // {
@@ -22,7 +26,7 @@ class TMS {
         sms.op_B = buffer.readUInt8(2);
         sms.msgId = buffer.readUInt8(4); //TODO: first bit changing motorola sms charset
 
-        sms.text = DMRUtil.decode_sms(buffer.slice(6, buffer.length)).toString();
+        sms.text = decode_sms(buffer.slice(6, buffer.length)).toString();
 
         if(sms.text.substr(0, 2)==="\r\n")
             sms.text = sms.text.substr(2);
@@ -31,7 +35,7 @@ class TMS {
     }
 
     getBuffer() {
-        let textBuffer = DMRUtil.encode_sms("\r\n" + this.text);
+        let textBuffer = encode_sms("\r\n" + this.text);
 
         let buffer = Buffer.alloc(6 + textBuffer.length); // https://github.com/KD8EYF/TRBO-NET/blob/master/TMS.pm
 
