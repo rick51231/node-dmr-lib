@@ -1,5 +1,6 @@
 const DMR = require('../index')
 const CRC32 = require('../../encoders/CRC32');
+const CRC9 = require('../../encoders/CRC9');
 
 
 class DataBlock {
@@ -20,8 +21,25 @@ class DataBlock {
         if(this.remainPackets===0)
             return false;
 
-        if(packet instanceof DMR.Raw && (packet.dataType === DMR.Packet.DATA_TYPE_UNCONFIRMED_DATA_CONT || packet.dataType === DMR.Packet.DATA_TYPE_CONFIRMED_DATA_CONT)) {
+        if(packet instanceof DMR.Raw && packet.dataType === DMR.Packet.DATA_TYPE_UNCONFIRMED_DATA_CONT) {
             this.dataBuffer.push(packet.data);
+
+        } else if(packet instanceof DMR.Raw && packet.dataType === DMR.Packet.DATA_TYPE_CONFIRMED_DATA_CONT) {
+            let b0 = packet.data.readUInt8(0);
+            let b1 = packet.data.readUInt8(1);
+
+            let serial = b0 >> 1;
+            let packetCRC = ((b0 & 0x1) << 8) | b1;
+            let rawPart = packet.data.slice(2, packet.data.length);
+            let crc = CRC9.compute(rawPart, serial) ^ DMR.Packet.RATE34_CRC_MASK;
+
+            if(crc!==packetCRC) {
+
+                console.log('[DataBlock] Invalid data fragment CRC '+crc+'!='+packetCRC); //TODO: remove it
+                //Do we need to clear data buffer ?
+                return false;
+            }
+            this.dataBuffer.push(rawPart);
         } else if(packet instanceof DMR.DataHeader.ProprietaryCompressed) { //TODO: validate something else ?
             this.secondDataHeader = packet;
             this.dataBuffer.push(packet.userData);

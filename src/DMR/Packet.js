@@ -8,6 +8,9 @@ class Packet {
     static DATA_TYPE_CONFIRMED_DATA_CONT = 8; // Rate 3/4
     static DATA_TYPE_VOICE = 10; //Or Rate 1
 
+    static RATE12_CRC_MASK = 0x00F0;
+    static RATE34_CRC_MASK = 0x01FF;
+
     dataType;
 
     constructor(dataType) {
