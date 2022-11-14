@@ -11,6 +11,11 @@ Motorola MotoTRBO DMR protocols research project.
 - XCMP (Extended Control & Management Protocol)
 - XNL (XCMP Network Layer)
 
+#### Services:
+- IPSCPeer - IPSC peer node, maintains master connection and provides DMR sending/receiving.
+- DMRIPGateway - DMR to UDP/IP gateway. Connects to the IPSCPeer.
+- DMRServices - ARS/LRRP/BMS service. Connects to the DMRIPGateway.
+
 #### Supported encodings/checksums:
 - BPTC 196/96
 - CRC 9/16/32
