@@ -1,6 +1,9 @@
 "use strict";
 
 class ARS {
+    static DEVICE_REGISTRATION = 0x0;
+    static DEVICE_DEREGISTRATION = 0x1;
+    static REGISTRATION_ACKNOWLEDGEMENT = 0xF;
     constructor() {
         this.extended = 0;
         this.ack = 0;

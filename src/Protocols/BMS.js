@@ -1,6 +1,17 @@
 const DMRConst = require('../DMRConst');
 
 class BMS {
+    static TYPE_DISCOVERY            = 0x01;
+    static TYPE_REGISTRATION         = 0x02;
+    static TYPE_REGISTRATION_ACK     = 0x03;
+    static TYPE_QUERY_REQUEST        = 0x04;
+    static TYPE_QUERY_REPLY          = 0x05;
+
+    static QUERY_TYPE_SHORT    = 0x1;
+    static QUERY_TYPE_NORMAL   = 0x2;
+    static QUERY_TYPE_EXTENDED = 0x3;
+
+
     constructor() {
         this.type = 0;
         this.reqId = 0;

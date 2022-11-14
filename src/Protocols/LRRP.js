@@ -21,6 +21,16 @@ const DMRConst = require('../DMRConst');
 // 09082203000004 344a42 lat/long + telemetry
 
 class LRRP {
+    static TYPE_ImmediateLocationRequest = 0x05;
+    static TYPE_ImmediateLocationResponse = 0x07;
+    static TYPE_TriggeredLocationStartRequest = 0x09;
+    static TYPE_TriggeredLocationStartResponse = 0x0B;
+    static TYPE_TriggeredLocationData = 0x0D;
+    static TYPE_TriggeredLocationStopRequest = 0x0F;
+    static TYPE_TriggeredLocationStopResponse = 0x11;
+    static TYPE_ProtocolVersionRequest = 0x14;
+    static TYPE_ProtocolVersionResponse = 0x15;
+
     constructor() {
         this.type = 0;
         this.id = 1;
