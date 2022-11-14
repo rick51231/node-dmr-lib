@@ -140,6 +140,14 @@ class IP4Packet {
         return packet;
     }
 
+    getDMRSrc() {
+        return this.src_addr & 0xFFFFFF;
+    }
+
+    getDMRDst() {
+        return this.dst_addr & 0xFFFFFF;
+    }
+
     getBuffer() {
         let ipHeaderSize = 20; //5 = 20 ???
         let udpSize = this.payload.length + 8; //udp size  (data size  + udp header size)
