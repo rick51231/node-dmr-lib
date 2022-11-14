@@ -8,8 +8,8 @@ Motorola MotoTRBO DMR protocols research project.
 - BMS (IMPRES Battery Management)
 - HomeBrew (HBLink repeater protocol)
 - IPSC (IP Site Connect)
-- XCMP
-- XNL 
+- XCMP (Extended Control & Management Protocol)
+- XNL (XCMP Network Layer)
 
 #### Supported encodings/checksums:
 - BPTC 196/96
