@@ -1,5 +1,5 @@
 ## BMS
-Here goes my research about IMPRESS Battery Management protocol.
+Here goes my research about IMPRES Battery Management protocol.
 
 - Folder [dumps](dumps) contains Wireshark pcap-files with communication between "Motorola IMPRES Battery Fleet Management" and Motorola DP4801e radio with the different batteries.
 - Folder [images](images) contains screenshot of the battery information and corresponding packet in the filename. 
@@ -25,8 +25,8 @@ Requests radio to register battery.
 ### BMS_REGISTRATION
 Radio registration request. Can be triggered manually with the BMS_DISCOVERY or automatically when `Over-the-air battery management` flag is enabled on current channel via CPS of RM. Registration ID is random for every new registration.
 
-    IMPRESS: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x02 <3 bytes registration id> <6 bytes battery serial>
-    NON-IMPRESS: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x01 <3 bytes registration id>
+    IMPRES: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x02 <3 bytes registration id> <6 bytes battery serial>
+    NON-IMPRES: 0x02 0xF9 0xD1 0xE1 0x19 0xDB 0x85 0x87 0x95 0xC2 0xD6 0x01 <3 bytes registration id>
 
 ### BMS_REGISTRATION_ACK
 PC confirms battery registration. Hash calculated from BMS_REGISTRATION id bytes with BMS.getRegisterHash() function.

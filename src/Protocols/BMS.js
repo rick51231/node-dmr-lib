@@ -31,8 +31,8 @@ class BMS {
         this.capacityPotential = 0;
         this.serial = '';
 
-        this.chargeCyclesImpress = 0;
-        this.chargeCyclesNonImpress = 0;
+        this.chargeCyclesImpres = 0;
+        this.chargeCyclesNonImpres = 0;
         this.calibrationCycles = 0;
 
         this.daysSinceCalibration = 0;
@@ -101,8 +101,8 @@ class BMS {
                     let serial = Array.from(buffer.slice(4, 10)).reverse();
                     bms.serial = Buffer.from(serial).toString('hex').toUpperCase();
 
-                    bms.chargeCyclesImpress = buffer.readUInt16LE(offset + 42);
-                    bms.chargeCyclesNonImpress = buffer.readUInt16LE(offset + 32);
+                    bms.chargeCyclesImpres = buffer.readUInt16LE(offset + 42);
+                    bms.chargeCyclesNonImpres = buffer.readUInt16LE(offset + 32);
                     bms.calibrationCycles = this.decryptInt(buffer.readUInt16LE(offset + 34), 2, key);
 
                     // See BMS_LED_* and BMS_BATTERY_* constants
@@ -115,7 +115,7 @@ class BMS {
                     for (let i = 0; i < 18; i += 2) {
                         bms.chargeAdded.push(buffer.readUInt16LE(offset + 44 + i));
                     }
-                    bms.chargeAdded[0] = bms.chargeCyclesImpress - (bms.chargeAdded.reduce((a, b) => a + b, 0));
+                    bms.chargeAdded[0] = bms.chargeCyclesImpres - (bms.chargeAdded.reduce((a, b) => a + b, 0));
 
                     for (let i = 0; i < 20; i += 2) {
                         bms.chargeRemaining.push(buffer.readUInt16LE(offset + 62 + i));
@@ -177,7 +177,7 @@ class BMS {
                         bf[i] = buffer.readUInt8(21 + 20 + i);
                     }
 
-                    bms.estimatedDaysUntilNextCalibration = Math.ceil(this.getReconditioningDays(bms.chargeRemaining, bf, q, bms.chargeCyclesImpress, bms.chargeCyclesNonImpress, bms.daysSinceCalibration, ba));
+                    bms.estimatedDaysUntilNextCalibration = Math.ceil(this.getReconditioningDays(bms.chargeRemaining, bf, q, bms.chargeCyclesImpres, bms.chargeCyclesNonImpres, bms.daysSinceCalibration, ba));
                 }
             } // if(code===DMRConst.BMS_QUERY_STATUS_OK) {
         }
