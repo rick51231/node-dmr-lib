@@ -11,6 +11,25 @@ class BMS {
     static QUERY_TYPE_NORMAL   = 0x2;
     static QUERY_TYPE_EXTENDED = 0x3;
 
+    static CHEMISTRY_NICD   = 0x01;
+    static CHEMISTRY_NIMN   = 0x02;
+    static CHEMISTRY_LIION  = 0x03;
+
+
+    static BATTERY_DISCHARGING      = 0x08;
+    static BATTERY_CONSTANT_CURRENT = 0x20;
+    static BATTERY_COMPLETED        = 0x80;
+
+    static LED_OFF                      = 0x00;
+    static LED_FLASHING_RED             = 0x01;
+    static LED_FLASHING_YELLOW          = 0x02;
+    static LED_STEADY_GREEN             = 0x04;
+    static LED_FLASHING_GREEN           = 0x08;
+    static LED_STEADY_RED               = 0x10;
+    static LED_STEADY_YELLOW            = 0x20;
+    static LED_ALTERNATING_RED_GREEN    = 0x40;
+    static LED_ALTERNATING_YELLOW_GREEN = 0x80;
+
 
     constructor() {
         this.type = 0;
