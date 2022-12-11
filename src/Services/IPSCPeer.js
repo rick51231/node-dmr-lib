@@ -17,7 +17,7 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
     socket;
     options;
     state = 0;
-    lostPings = 0;
+    lostPings = 0; //TODO: lost pings increment ?
     interval;
     dmrSeq = 0;
     streamId = 0;
@@ -144,7 +144,7 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
     }
 
     sendDMRData(data, src_id, dst_id, dstIsGroup, isFirst, isLast, slot=0) {
-        if(this.dmrSeq>65535)
+        if(this.dmrSeq>=65535)
             this.dmrSeq = 0;
         else
             this.dmrSeq++;
