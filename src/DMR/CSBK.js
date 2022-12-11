@@ -1,5 +1,5 @@
 const Packet = require("./Packet");
-const CRC16 = require("../encoders/CRC16");
+const CRC16 = require("../Encoders/CRC16");
 
 class CSBK extends Packet {
     static CRC_MASK = 0xA5A5;
