@@ -64,6 +64,7 @@ class BMS {
         this.batteryState = 0;
 
         //Battery query response - extended
+        this.chemistry = 0;
         this.partNumber = '';
         this.capacityRated = 0;
         this.softwareVersion = 0;
@@ -174,6 +175,7 @@ class BMS {
                 }
 
                 if (bms.queryType !== DMRConst.BMS_QUERY_TYPE_NORMAL) {
+                    bms.chemistry = buffer.readUInt8(10);
                     bms.capacityRated = buffer.readUInt8(23) * 25;
                     bms.partNumber = buffer.slice(11, 23).toString().replace(/\0/g, '');
                     let bb = buffer.readUInt8(24);
