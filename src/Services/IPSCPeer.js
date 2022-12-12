@@ -157,7 +157,7 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
         dmrPayload.lengthToFollow = 10;
         dmrPayload.rssiPresent = false;
         dmrPayload.slotTypePresent = true;
-        dmrPayload.sync = 2;
+        dmrPayload.sync = IPSC.Types.DMRPayload.SYNC_VOICE;
         dmrPayload.dataSizeBits = 96;
         dmrPayload.colorCode = 1;
         dmrPayload.dataType = data.dataType;

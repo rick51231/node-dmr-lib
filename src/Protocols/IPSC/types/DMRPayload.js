@@ -11,6 +11,9 @@ class DMRPayload {
     static DATA_TYPE_UNCONFIRMED_DATA_CONT = 7; // Rate 1/2
     static DATA_TYPE_CONFIRMED_DATA_CONT = 8; // Rate 3/4
     static DATA_TYPE_VOICE = 10; //Or Rate 1
+
+    static SYNC_VOICE = 1;
+    static SYNC_DATA = 2;
     /*
       public enum DataType
   {
@@ -47,7 +50,7 @@ class DMRPayload {
     embSigBit10 = false;
     syncHardBits = false;
     slotTypePresent = false;
-    sync = false;
+    sync = DMRPayload.SYNC_DATA;
     dataSizeBits = 0;
     colorCode = 0;
     dataType = 0;
