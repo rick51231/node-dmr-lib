@@ -1,6 +1,6 @@
 const DMR = require('../index')
-const CRC32 = require('../../encoders/CRC32');
-const CRC9 = require('../../encoders/CRC9');
+const CRC32 = require('../../Encoders/CRC32');
+const CRC9 = require('../../Encoders/CRC9');
 
 
 class DataBlock {
