@@ -133,9 +133,11 @@ class DMRServices extends EventEmitter  {
         if(this.options.LRRPRequests[LRRPId]===undefined)
             return; //TODO: send cancel?
 
-        if(lrrp.type===Protocols.LRRP.TYPE_TriggeredLocationStartResponse)
+        if(lrrp.type===Protocols.LRRP.TYPE_TriggeredLocationStartResponse) {
+            this.status[ipPacket.getDMRSrc()].LRRP[LRRPId].code = lrrp.locationData.status + '(' + lrrp.locationData.status_code + ')';
             this.setLRRPStatus(ipPacket.getDMRSrc(), LRRPId, DMRServices.LRRP_STATUS_CONFIRMED);
-        else if(lrrp.type===Protocols.LRRP.TYPE_TriggeredLocationData) {
+        } else if(lrrp.type===Protocols.LRRP.TYPE_TriggeredLocationData) {
+            this.status[ipPacket.getDMRSrc()].LRRP[LRRPId].code = lrrp.locationData.status + '('+lrrp.locationData.status_code+')';
             this.setLRRPStatus(ipPacket.getDMRSrc(), LRRPId, DMRServices.LRRP_STATUS_RECEIVED);
             this.emit(DMRServices.EVENT_LOCATION, ipPacket.getDMRSrc(), lrrp.locationData, ipPacket.payload);
         }
@@ -163,7 +165,7 @@ class DMRServices extends EventEmitter  {
             await delay(1000);
             this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_REGISTERED);
         } else if(bms.type===Protocols.BMS.TYPE_QUERY_REPLY) {
-
+            this.status[ipPacket.getDMRSrc()].BMS.code = bms.code;
 
             if(bms.code===6) {//TODO: use constant
                 this.status[ipPacket.getDMRSrc()].BMS.retryCount = 0;
@@ -259,6 +261,7 @@ class DMRServices extends EventEmitter  {
             LRRP: [],
             BMS: {
                 status: DMRServices.BMS_STATUS_NONE,
+                code: '',
                 updated: getTime(),
                 retryCount: 0,
                 serial: '',
@@ -271,6 +274,7 @@ class DMRServices extends EventEmitter  {
         for(let [id] of this.options.LRRPRequests.entries()) {
             this.status[dmrID].LRRP[id] = {
                 status: DMRServices.LRRP_STATUS_NONE,
+                code: '',
                 updated: getTime(),
                 retryCount: 0
             };
