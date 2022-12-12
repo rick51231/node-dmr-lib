@@ -364,6 +364,48 @@ class DMRServices extends EventEmitter  {
         }, 50);
     }
 
+    static ARSStatusToText(status) {
+        switch(status) {
+            case DMRServices.ARS_STATUS_UNREGISTERED:
+                return 'Unregistered';
+            case DMRServices.ARS_STATUS_REGISTERED:
+                return 'Registered';
+        }
+
+        return '';
+    }
+
+    static LRRPStatusToText(status) {
+        switch(status) {
+            case DMRServices.LRRP_STATUS_NONE:
+                return 'None';
+            case DMRServices.LRRP_STATUS_SENT:
+                return 'Sent';
+            case DMRServices.LRRP_STATUS_CONFIRMED:
+                return 'Confirmed';
+            case DMRServices.LRRP_STATUS_RECEIVED:
+                return 'Received';
+        }
+
+        return '';
+    }
+
+    static BMSStatusToText(status) {
+        switch(status) {
+            case DMRServices.BMS_STATUS_NONE:
+                return 'None';
+            case DMRServices.BMS_STATUS_UNREGISTERED:
+                return 'Unregistered';
+            case DMRServices.BMS_STATUS_DISCOVERY_SENT:
+                return 'Discovery sent';
+            case DMRServices.BMS_STATUS_REGISTERED:
+                return 'Registered';
+            case DMRServices.BMS_STATUS_RECEIVED:
+                return 'Received';
+        }
+
+        return '';
+    }
 }
 
 module.exports = DMRServices;
