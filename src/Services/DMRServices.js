@@ -25,6 +25,7 @@ class DMRServices extends EventEmitter  {
     static EVENT_BATTERY = 'battery';
     static EVENT_LOCATION = 'location';
     static EVENT_REGISTER = 'register';
+    static EVENT_STATUS = 'status';
 
     ipGateway;
     serviceId;
@@ -150,6 +151,7 @@ class DMRServices extends EventEmitter  {
 
         if(bms.type===Protocols.BMS.TYPE_REGISTRATION) {
             this.status[ipPacket.getDMRSrc()].BMS.serial = bms.serial;
+            this.statusUpdated(ipPacket.getDMRSrc());
 
             let replyBMS = new Protocols.BMS();
 
@@ -163,6 +165,7 @@ class DMRServices extends EventEmitter  {
             if(bms.code===0) {//TODO: use constant
                 this.status[ipPacket.getDMRSrc()].BMS.serial = bms.serial;
                 this.status[ipPacket.getDMRSrc()].BMS.charge = bms.charge;
+                this.statusUpdated(ipPacket.getDMRSrc());
 
                 this.emit(DMRServices.EVENT_BATTERY, ipPacket.getDMRSrc(), bms);
             }
@@ -204,11 +207,13 @@ class DMRServices extends EventEmitter  {
         console.log('[DMRServices] ARS: ID:'+dmrID+' S:'+status);
         this.status[dmrID].ARS.status = status;
         this.status[dmrID].ARS.updated = getTime();
+        this.statusUpdated(dmrID);
 
         if(status===DMRServices.ARS_STATUS_REGISTERED) {
             setTimeout(() => {
-                this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_UNREGISTERED);
                 this.status[dmrID].BMS.retryCount = 0;
+                this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_UNREGISTERED);
+
             }, 100);
 
 
@@ -223,12 +228,16 @@ class DMRServices extends EventEmitter  {
         console.log('[DMRServices] BMS: ID:'+dmrID+' S:'+status);
         this.status[dmrID].BMS.status = status;
         this.status[dmrID].BMS.updated = getTime();
+
+        this.statusUpdated(dmrID);
     }
 
     setLRRPStatus(dmrID, LRRPId, status) {
         console.log('[DMRServices] LRRP-'+LRRPId+': ID:'+dmrID+' S:'+status);
         this.status[dmrID].LRRP[LRRPId].status = status;
         this.status[dmrID].LRRP[LRRPId].updated = getTime();
+
+        this.statusUpdated(dmrID);
     }
 
     generateStatus(dmrID) {
@@ -256,10 +265,15 @@ class DMRServices extends EventEmitter  {
                 retryCount: 0
             };
         }
+
+        this.statusUpdated(dmrID);
+    }
+
+    statusUpdated(dmr_id) {
+        this.emit(DMRServices.EVENT_STATUS, dmr_id);
     }
 
     discoveryBMS(dmrID) {
-        this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_DISCOVERY_SENT);
         this.status[dmrID].BMS.retryCount++;
 
         let bms = new Protocols.BMS();
@@ -273,6 +287,7 @@ class DMRServices extends EventEmitter  {
 
     queryBMS(dmrID) {
         this.status[dmrID].BMS.lastQuery = getTime();
+        this.statusUpdated(dmrID);
         let bms = new Protocols.BMS();
 
         bms.type = Protocols.BMS.TYPE_QUERY_REQUEST;
@@ -287,6 +302,7 @@ class DMRServices extends EventEmitter  {
     sendLRRP(dmrID, LRRPId) {
         this.setLRRPStatus(dmrID, LRRPId, DMRServices.LRRP_STATUS_SENT);
         this.status[dmrID].LRRP[LRRPId].retryCount++;
+        this.statusUpdated(dmrID);
 
         let lrrp = this.options.LRRPRequests[LRRPId];
 
