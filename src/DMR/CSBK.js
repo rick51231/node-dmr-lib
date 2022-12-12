@@ -66,6 +66,7 @@ class CSBK extends Packet {
 
         packet.isLast = isLast;
         packet.PF = PF;
+        packet.mfId = buffer.readUInt8(1);
 
         return packet;
     }
