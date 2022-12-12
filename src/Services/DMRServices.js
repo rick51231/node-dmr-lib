@@ -5,7 +5,8 @@ const Network = require("../Motorola/Network");
 const { getTime, delay } = require('./Utils');
 const EventEmitter = require("events");
 
-const RETRY_DELAY = 60000; //60 seconds = 60000 ms
+
+//TODO: TMS service
 
 class DMRServices extends EventEmitter  {
     static ARS_STATUS_UNREGISTERED = 0;
@@ -38,6 +39,7 @@ class DMRServices extends EventEmitter  {
         this.serviceId = serviceID;
         this.options = {
             ignoreUnregistered: options.ignoreUnregistered ?? false,
+            retryDelay: options.retryDelay ?? 60000,
             CSBKCount: options.CSBKCount ?? 2,
             LRRPEnabled: options.LRRPEnabled ?? false,
             LRRPRequests: options.LRRPRequests ?? [],
@@ -305,7 +307,7 @@ class DMRServices extends EventEmitter  {
                     if(this.status[dmrID].LRRP[id].status===DMRServices.LRRP_STATUS_NONE) {
                         this.sendLRRP(dmrID, id);
                         await delay(1000);
-                    } else if(this.status[dmrID].LRRP[id].status===DMRServices.LRRP_STATUS_SENT && this.status[dmrID].LRRP[id].retryCount < this.options.LRRPRetryCount && this.status[dmrID].LRRP[id].updated + RETRY_DELAY < getTime()) {
+                    } else if(this.status[dmrID].LRRP[id].status===DMRServices.LRRP_STATUS_SENT && this.status[dmrID].LRRP[id].retryCount < this.options.LRRPRetryCount && this.status[dmrID].LRRP[id].updated + this.options.retryDelay < getTime()) {
                         this.setLRRPStatus(dmrID, id, DMRServices.LRRP_STATUS_NONE);
                     }
                 }
@@ -315,7 +317,7 @@ class DMRServices extends EventEmitter  {
                 if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_UNREGISTERED) {
                     this.discoveryBMS(dmrID);
                     await delay(1000);
-                } else if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_DISCOVERY_SENT && this.status[dmrID].BMS.retryCount < this.options.BMSRetryCount && this.status[dmrID].BMS.updated + RETRY_DELAY < getTime()) {
+                } else if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_DISCOVERY_SENT && this.status[dmrID].BMS.retryCount < this.options.BMSRetryCount && this.status[dmrID].BMS.updated + this.options.retryDelay < getTime()) {
                     this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_UNREGISTERED);
                 } else if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_REGISTERED) {
                     if(this.options.BMSQueryInterval > 0 && this.status[dmrID].BMS.lastQuery + (this.options.BMSQueryInterval * 1000) < getTime()) {
