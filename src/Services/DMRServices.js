@@ -136,7 +136,7 @@ class DMRServices extends EventEmitter  {
             this.setLRRPStatus(ipPacket.getDMRSrc(), LRRPId, DMRServices.LRRP_STATUS_CONFIRMED);
         else if(lrrp.type===Protocols.LRRP.TYPE_TriggeredLocationData) {
             this.setLRRPStatus(ipPacket.getDMRSrc(), LRRPId, DMRServices.LRRP_STATUS_RECEIVED);
-            this.emit(DMRServices.EVENT_LOCATION, ipPacket.getDMRSrc(), lrrp.locationData);
+            this.emit(DMRServices.EVENT_LOCATION, ipPacket.getDMRSrc(), lrrp.locationData, ipPacket.payload);
         }
     }
 
@@ -167,7 +167,7 @@ class DMRServices extends EventEmitter  {
                 this.status[ipPacket.getDMRSrc()].BMS.charge = bms.charge;
                 this.statusUpdated(ipPacket.getDMRSrc());
 
-                this.emit(DMRServices.EVENT_BATTERY, ipPacket.getDMRSrc(), bms);
+                this.emit(DMRServices.EVENT_BATTERY, ipPacket.getDMRSrc(), bms, ipPacket.payload);
             }
             //TODO: reregister in case of BMS_QUERY_STATUS_TARGET_NOT_REGISTERED || BMS_QUERY_STATUS_SOURCE_NOT_REGISTERED
         }
