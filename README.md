@@ -21,6 +21,7 @@ Motorola MotoTRBO DMR protocols research project.
 - CRC 9/16/32
 - Hamming
 - Trellis
+- Golay 20/8/7
 
 #### Supported IP features:
 - UDP/IP4 over dmr (plain)
