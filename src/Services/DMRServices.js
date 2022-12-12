@@ -16,6 +16,7 @@ class DMRServices extends EventEmitter  {
     static BMS_STATUS_UNREGISTERED = 1;
     static BMS_STATUS_DISCOVERY_SENT = 2;
     static BMS_STATUS_REGISTERED = 3;
+    static BMS_STATUS_RECEIVED = 4;
 
     static LRRP_STATUS_NONE = 0;
     static LRRP_STATUS_SENT = 1;
@@ -162,6 +163,15 @@ class DMRServices extends EventEmitter  {
             await delay(1000);
             this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_REGISTERED);
         } else if(bms.type===Protocols.BMS.TYPE_QUERY_REPLY) {
+
+
+            if(bms.code===6) {//TODO: use constant
+                this.status[ipPacket.getDMRSrc()].BMS.retryCount = 0;
+                this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_UNREGISTERED);
+            } else {
+                this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_RECEIVED);
+            }
+
             if(bms.code===0) {//TODO: use constant
                 this.status[ipPacket.getDMRSrc()].BMS.serial = bms.serial;
                 this.status[ipPacket.getDMRSrc()].BMS.charge = bms.charge;
@@ -275,6 +285,7 @@ class DMRServices extends EventEmitter  {
 
     discoveryBMS(dmrID) {
         this.status[dmrID].BMS.retryCount++;
+        this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_DISCOVERY_SENT);
 
         let bms = new Protocols.BMS();
 
@@ -335,7 +346,7 @@ class DMRServices extends EventEmitter  {
                     await delay(1000);
                 } else if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_DISCOVERY_SENT && this.status[dmrID].BMS.retryCount < this.options.BMSRetryCount && this.status[dmrID].BMS.updated + this.options.retryDelay < getTime()) {
                     this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_UNREGISTERED);
-                } else if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_REGISTERED) {
+                } else if(this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_REGISTERED || this.status[dmrID].BMS.status===DMRServices.BMS_STATUS_RECEIVED) {
                     if(this.options.BMSQueryInterval > 0 && this.status[dmrID].BMS.lastQuery + (this.options.BMSQueryInterval * 1000) < getTime()) {
                         this.queryBMS(dmrID);
                         await delay(1000);
