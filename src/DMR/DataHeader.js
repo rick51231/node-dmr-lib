@@ -41,6 +41,9 @@ class DataHeader extends Packet {
         let packetClass;
 
         switch(DPF) {
+            case DataHeader.DPF_UDT:
+                packetClass = require('./DataHeader/Unified');
+                break;
             case DataHeader.DPF_RESPONSE:
                 packetClass = require('./DataHeader/Response');
                 break;
