@@ -77,6 +77,28 @@ class Hamming {
             default: return [d, false];
         }
     }
+
+    static encode1393(bitArray) {
+        let d = bitArray;
+
+        d[9]  = d[0] ^ d[1] ^ d[3] ^ d[5] ^ d[6];
+        d[10] = d[0] ^ d[1] ^ d[2] ^ d[4] ^ d[6] ^ d[7];
+        d[11] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[7] ^ d[8];
+        d[12] = d[0] ^ d[2] ^ d[4] ^ d[5] ^ d[8];
+
+        return d;
+    }
+
+    static encode15113_2(bitArray, offset) {
+        let d = bitArray;
+
+        d[offset+11] = d[offset+0] ^ d[offset+1] ^ d[offset+2] ^ d[offset+3] ^ d[offset+5] ^ d[offset+7] ^ d[offset+8];
+        d[offset+12] = d[offset+1] ^ d[offset+2] ^ d[offset+3] ^ d[offset+4] ^ d[offset+6] ^ d[offset+8] ^ d[offset+9];
+        d[offset+13] = d[offset+2] ^ d[offset+3] ^ d[offset+4] ^ d[offset+5] ^ d[offset+7] ^ d[offset+9] ^ d[offset+10];
+        d[offset+14] = d[offset+0] ^ d[offset+1] ^ d[offset+2] ^ d[offset+4] ^ d[offset+6] ^ d[offset+7] ^ d[offset+10];
+
+        return d;
+    }
 }
 
 module.exports = Hamming;
