@@ -121,7 +121,7 @@ class BMS {
                     let serial = Array.from(buffer.slice(4, 10)).reverse();
                     bms.serial = Buffer.from(serial).toString('hex').toUpperCase();
 
-                    bms.chargeCyclesImpres = buffer.readUInt16LE(offset + 42);
+
                     bms.chargeCyclesNonImpres = buffer.readUInt16LE(offset + 32);
                     bms.calibrationCycles = this.decryptInt(buffer.readUInt16LE(offset + 34), 2, key);
 
@@ -130,17 +130,21 @@ class BMS {
                     bms.batteryState = buffer.readUInt8(offset + 37);
 
 
-                    // https://github.com/jelimoore/trbodatasvc/blob/b0753ab8fe8f7241bb85715184ba59fea2de0c2d/src/TrboDataSvc/battery.py
-                    bms.chargeAdded.push(0); // First value will be calculated later
-                    for (let i = 0; i < 18; i += 2) {
-                        bms.chargeAdded.push(buffer.readUInt16LE(offset + 44 + i));
+                    for (let i = 0; i < 20; i += 2) {
+                        bms.chargeAdded.push(buffer.readUInt16LE(offset + 42 + i));
                     }
-                    bms.chargeAdded[0] = bms.chargeCyclesImpres - (bms.chargeAdded.reduce((a, b) => a + b, 0));
+
+                    let sum = bms.chargeAdded.reduce((a, b) => a + b, 0);
+                    let tmp = sum - bms.chargeAdded[0];
+
+                    if(bms.chargeAdded[0] >= tmp)
+                        bms.chargeAdded[0] -= tmp;
+
+                    bms.chargeCyclesImpres = tmp + bms.chargeAdded[0];
 
                     for (let i = 0; i < 20; i += 2) {
                         bms.chargeRemaining.push(buffer.readUInt16LE(offset + 62 + i));
                     }
-
 
                     //Calculations
                     let b9 = buffer.readUInt16LE(offset + 10) / 100000;
@@ -170,8 +174,8 @@ class BMS {
                     bms.capacityPotential = a8;
                     bms.capacityCurrent = ((1000 * m) / (2048 * b9)) - chargeCalibration;
 
-                    bms.daysSinceCalibration = at - v; //TODO: au - v ?
-                    bms.daysSinceLastRemovalFromImpres = at - ah;
+                    bms.daysSinceCalibration = Math.floor(at > v ? at - v : 0); //TODO: au - v ?
+                    bms.daysSinceLastRemovalFromImpres = Math.floor(at - ah);
                 }
 
                 if (bms.queryType !== DMRConst.BMS_QUERY_TYPE_NORMAL) {
@@ -612,7 +616,7 @@ class BMS {
 
                 case 7:
                     if(!flag2) {
-                        intVal >>= 1;
+                        intVal >>>= 1;
                         num3 = 13;
                         break;
                     }
@@ -647,7 +651,7 @@ class BMS {
                         break;
                     }
 
-                    intVal >>= 1;
+                    intVal >>>= 1;
                     num3 = 11;
                     break;
 
@@ -662,7 +666,7 @@ class BMS {
                     break;
 
                 case 17:
-                    intVal >>= 1;
+                    intVal >>>= 1;
                     intVal |= 32768;
                     num3 = 19;
                     break;
