@@ -238,7 +238,7 @@ class BMS {
             else if(this.queryType===DMRConst.BMS_QUERY_TYPE_NORMAL)
                 str = DMRConst.BMS_QUERY_TYPE_NORMAL_HEX;
             else if(this.queryType===DMRConst.BMS_QUERY_TYPE_EXTENDED)
-                str = this.queryType===DMRConst.BMS_QUERY_TYPE_EXTENDED_HEX;
+                str = DMRConst.BMS_QUERY_TYPE_EXTENDED_HEX;
 
             buffer.write(str, 3, 'hex');
         }
