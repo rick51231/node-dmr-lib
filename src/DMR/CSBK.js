@@ -17,7 +17,7 @@ class CSBK extends Packet {
     
     opcode;
     isLast = false;
-    PF = false; //TODO: what is this?
+    PF = false; //Protect Flag
     mfId = 0;
 
     constructor(opcode) {
@@ -26,7 +26,6 @@ class CSBK extends Packet {
         this.opcode = opcode;
     }
 
-    //TODO: byte 1 ?
     static from(buffer) {
         if(buffer.length!==12)
             return null;
