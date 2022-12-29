@@ -10,6 +10,7 @@ Motorola MotoTRBO DMR protocols research project.
 - IPSC (IP Site Connect)
 - XCMP (Extended Control & Management Protocol)
 - XNL (XCMP Network Layer)
+- NMEA over DMR UDT: Short (ETSI specs) and Legacy (Ailunce and TYT radios).
 
 #### Services:
 - IPSCPeer - IPSC peer node, maintains master connection and provides DMR sending/receiving.
