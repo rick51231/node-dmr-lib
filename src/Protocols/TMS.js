@@ -1,11 +1,5 @@
 "use strict";
 
-const Iconv  = require('iconv').Iconv;
-
-//TODO: refactor ?
-const decode_sms = (new Iconv('UTF-16LE', 'UTF-8')).convert;
-const encode_sms = (new Iconv('UTF-8', 'UTF-16LE')).convert;
-
 // public enum MessageType
 // {
 //     SimpleText = 0,
@@ -25,8 +19,8 @@ class TMS {
 
         sms.op_B = buffer.readUInt8(2);
         sms.msgId = buffer.readUInt8(4); //TODO: first bit changing motorola sms charset
-
-        sms.text = decode_sms(buffer.slice(6, buffer.length)).toString();
+        let textBuffer = buffer.slice(6, buffer.length);
+        sms.text = this.decodeUTF16LE(textBuffer).toString('utf8');
 
         if(sms.text.substr(0, 2)==="\r\n")
             sms.text = sms.text.substr(2);
@@ -35,7 +29,7 @@ class TMS {
     }
 
     getBuffer() {
-        let textBuffer = encode_sms("\r\n" + this.text);
+        let textBuffer = Buffer.from("\r\n" + this.text, 'utf16le');
 
         let buffer = Buffer.alloc(6 + textBuffer.length); // https://github.com/KD8EYF/TRBO-NET/blob/master/TMS.pm
 
@@ -47,6 +41,35 @@ class TMS {
         buffer.write(textBuffer.toString('hex'), 6, 'hex');
 
         return buffer;
+    }
+
+    // https://stackoverflow.com/questions/33781295/how-to-convert-a-utf16-file-into-a-utf8-file-in-nodejs
+    static decodeUTF16LE(binary) {
+        const utf8 = [];
+        for (var i = 0; i < binary.length; i += 2) {
+            let charcode = binary.readUInt16LE(i);
+            if (charcode < 0x80) utf8.push(charcode);
+            else if (charcode < 0x800) {
+                utf8.push(0xc0 | (charcode >> 6), 0x80 | (charcode & 0x3f));
+            } else if (charcode < 0xd800 || charcode >= 0xe000) {
+                utf8.push(0xe0 | (charcode >> 12), 0x80 | ((charcode >> 6) & 0x3f), 0x80 | (charcode & 0x3f));
+            }
+            // surrogate pair
+            else {
+                i++;
+                // UTF-16 encodes 0x10000-0x10FFFF by
+                // subtracting 0x10000 and splitting the
+                // 20 bits of 0x0-0xFFFFF into two halves
+                charcode = 0x10000 + (((charcode & 0x3ff) << 10) | (charcode & 0x3ff));
+                utf8.push(
+                    0xf0 | (charcode >> 18),
+                    0x80 | ((charcode >> 12) & 0x3f),
+                    0x80 | ((charcode >> 6) & 0x3f),
+                    0x80 | (charcode & 0x3f)
+                );
+            }
+        }
+        return Buffer.from(utf8);
     }
 }
 
