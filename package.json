@@ -1,0 +1,41 @@
+{
+  "name": "dmr-lib",
+  "version": "1.0.0",
+  "description": "Motorola MotoTRBO DMR protocols research project",
+  "main": "src/index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rick51231/node-dmr-lib.git"
+  },
+  "keywords": [
+    "homebrew",
+    "compression",
+    "battery",
+    "motorola",
+    "management",
+    "tms",
+    "advantage",
+    "bms",
+    "nmea",
+    "dmr",
+    "ipsc",
+    "mototrbo",
+    "xnl",
+    "xcmp",
+    "ars",
+    "lrrp",
+    "impres"
+  ],
+  "author": "Rick51231",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rick51231/node-dmr-lib/issues"
+  },
+  "homepage": "https://github.com/rick51231/node-dmr-lib#readme"
+}
