@@ -31,6 +31,9 @@ class BMS {
     static LED_ALTERNATING_YELLOW_GREEN = 0x80;
 
 
+
+
+// TODO: initial capacity
     constructor() {
         this.type = 0;
         this.reqId = 0;
@@ -110,12 +113,16 @@ class BMS {
 
                 let key = buffer.readUInt8(4); //Key = first byte of the serial number
                 let key2 = buffer.readUInt8(9); //Key2 = last byte of the serial number, only for date
+                let offset = bms.queryType === DMRConst.BMS_QUERY_TYPE_EXTENDED ? 21 : 0;
+                let v = BMS.decryptInt(buffer.readUInt16LE(offset + 82), 2, key);
 
                 if(bms.queryType!==DMRConst.BMS_QUERY_TYPE_SHORT) {
-                    let offset = bms.queryType === DMRConst.BMS_QUERY_TYPE_EXTENDED ? 21 : 0;
+
 
                     bms.voltage = buffer.readUInt16LE(offset + 38) / 100 + 0.13500000536441803;
-                    bms.temperature = buffer.readInt8(offset + 41) + buffer.readUInt8(offset + 40) / 256;
+                    bms.voltage = Math.round(bms.voltage * 100) / 100; //Precision to two digits
+                    bms.temperature =  buffer.readInt16LE(offset + 40) / 256; //buffer.readInt8(offset + 41) + buffer.readUInt8(offset + 40) / 256; //TODO: check it ?
+                    bms.temperature = Math.round(bms.temperature * 100) / 100; //Precision to two digits
                     bms.charge = buffer.readUInt8(offset + 90);
 
                     let serial = Array.from(buffer.slice(4, 10)).reverse();
@@ -148,9 +155,12 @@ class BMS {
 
                     //Calculations
                     let b9 = buffer.readUInt16LE(offset + 10) / 100000;
+
                     let a6 = BMS.decryptInt(buffer.readUInt8(offset + 13), 1, key);
-                    let v = BMS.decryptInt(buffer.readUInt16LE(offset + 82), 2, key);
                     let s = BMS.decryptInt(buffer.readUInt16LE(offset + 16), 2, key);
+                    //TODO; s == ah ?
+
+
                     let ay = buffer.readUInt32LE(offset + 84);
                     let ah = buffer.readUInt16LE(offset + 88);
                     let m = buffer.readUInt8(offset + 12);
@@ -162,17 +172,17 @@ class BMS {
                     let a8 = ((1000 * a6) / (2048 * b9));
                     let at = ay / 86400;
 
-                    let num20 = ay - at * 86400;
-                    let av = num20 / 3600;
-                    let num21 = num20 - av * 3600;
+                    // let num20 = ay - at * 86400;
+                    // let av = num20 / 3600;
+                    // let num21 = num20 - av * 3600;
                     // let aw = num21 / 60;
                     // let ax = num21 - obj.aw * 60;
                     let ak = ah * 86400 + ai * 3600 + aj * 60;
 
                     let chargeCalibration = this.getChargeCalibration(ah, ak, bg, bh, s, ay, a8);
 
-                    bms.capacityPotential = a8;
-                    bms.capacityCurrent = ((1000 * m) / (2048 * b9)) - chargeCalibration;
+                    bms.capacityPotential = Math.floor(a8);
+                    bms.capacityCurrent = Math.floor(((1000 * m) / (2048 * b9)) - chargeCalibration);
 
                     bms.daysSinceCalibration = Math.floor(at > v ? at - v : 0); //TODO: au - v ?
                     bms.daysSinceLastRemovalFromImpres = Math.floor(at - ah);
@@ -202,7 +212,8 @@ class BMS {
                         bf[i] = buffer.readUInt8(21 + 20 + i);
                     }
 
-                    bms.estimatedDaysUntilNextCalibration = Math.ceil(this.getReconditioningDays(bms.chargeRemaining, bf, q, bms.chargeCyclesImpres, bms.chargeCyclesNonImpres, bms.daysSinceCalibration, ba));
+                    bms.estimatedDaysUntilNextCalibration = Math.ceil(this.getReconditioningDays(bms.chargeRemaining, bf, q, bms.chargeCyclesImpres, bms.chargeCyclesNonImpres, bms.daysSinceCalibration, ba, v));
+
                 }
             } // if(code===DMRConst.BMS_QUERY_STATUS_OK) {
         }
@@ -255,41 +266,33 @@ class BMS {
         let num1 = 12;
         let num2 = 0;
 
-        loop: while(true) {
-            let num3 = 0.0;
-            let flag1 = false;
-            let num4 = 0.0;
-            let index2 = 0;
-            let flag2 = false;
-            let A_0 = 0;
-            let calibrationNeeded = false;
-            let num5 = 0;
-            let index3 = 0;
-            let num6 = 0.0;
-            let flag3 = false;
-            let flag4 = false;
-            let flag5 = false;
-            let flag6 = false;
-            let flag7 = false;
-            let num7 = 0;
-            let num8 = 0;
+        let num3 = 0.0;
+        let num4 = 0.0;
+        let index2 = 0;
+        let A_0 = 0;
+        let calibrationNeeded = false;
+        let num5 = 0;
+        let index3 = 0;
+        let num6 = 0.0;
+        let flag7 = false;
+        let num7 = 0;
+        let num8 = 0;
 
+        loop: while(true) {
             switch (num1)
             {
                 case 0:
-                    if (!flag5)
-                    {
-                        ++index1;
-                        num1 = 41;
+                    if (num7 !== 0) {
+                        num1 = 15;
                         continue;
                     }
-                    num1 = 15;
+                    ++index1;
+                    num1 = 41;
                     continue;
                 case 1:
                 case 20:
                     let val2 = (30 - Math.min(30, u));
-
-                    num2 = Math.max(val1, val2); //TODO: should be Math.min(val1, val2)
+                    num2 = Math.min(val1, val2);
                     num1 = 21;
                     continue;
                 case 2:
@@ -306,36 +309,34 @@ class BMS {
                     continue;
                 case 4:
                 case 24:
-                    index3 =  (num6 / 10.0);
-                    flag3 = bf[index3] !== 0;
+                    index3 =  Math.round(num6 / 10.0);
                     num1 = 36;
                     continue;
                 case 5:
-                    num1 = 33; //TODO: !cc(A_0) ? 33 : 27;
+                    num1 = 27; //TODO: !(isValidField(A_0))) ? 33 : 27;
                     continue;
                 case 6:
                     num1 = v !== 0 ? 28 : 8;
                     continue;
                 case 7:
-                    if (!flag2)
-                    {
-                        num1 = 31;
+                    if (index2 < 10) {
+                        num3 +=  ag[index2] * (10 * index2 + 5);
+                        num6 += ag[index2];
+                        ++index2;
+                        num1 = 25;
                         continue;
+
                     }
-                    num3 +=  ag[index2] * (10 * index2 + 5);
-                    num6 += ag[index2];
-                    ++index2;
-                    num1 = 25;
+                    num1 = 31;
                     continue;
                 case 8:
                     num1 = 38;
                     continue;
                 case 9:
-                    num7 = 1; //TODO: !cd(A_0) ? 1 : 0;
+                    num7 = 0; //TODO: !(isValidItem(A_0)) ? 1 : 0;
                     break;
                 case 10:
-                    if (calibrationNeeded)
-                    {
+                    if (calibrationNeeded)  {
                         num1 = 18;
                         continue;
                     }
@@ -348,7 +349,6 @@ class BMS {
                     continue;
                 case 11:
                 case 25:
-                    flag2 = index2 < 10;
                     num1 = 7;
                     continue;
                 case 12:
@@ -361,7 +361,6 @@ class BMS {
                     continue;
                 case 14:
                 case 23:
-                    flag6 = q > 0;
                     num1 = 35;
                     continue;
                 case 15:
@@ -372,7 +371,6 @@ class BMS {
                     num1 = 37;
                     continue;
                 case 17:
-
                     val1 = num5 / num4;
                     num1 = 1;
                     continue;
@@ -387,11 +385,10 @@ class BMS {
                     break loop;
                 case 22:
                 case 37:
-                    flag4 = num4 > 0.001;
                     num1 = 40;
                     continue;
                 case 26:
-                    if (flag7)
+                    if (num8 !== 0)
                     {
                         num1 = 3;
                         continue;
@@ -403,17 +400,14 @@ class BMS {
                     continue;
                 case 28:
                     num8 = 1;
-                    flag7 = num8 !== 0;
                     num1 = 26;
                     continue;
                 case 29:
-
                     num5 = ba / bf[index3];
                     num1 = 14;
                     continue;
                 case 30:
-                    if (flag1)
-                    {
+                    if (num3 === 0.0) {
                         num1 = 13;
                         continue;
                     }
@@ -421,7 +415,6 @@ class BMS {
                     num1 = 24;
                     continue;
                 case 31:
-                    flag1 = num3 === 0.0;
                     num1 = 30;
                     continue;
                 case 32:
@@ -432,8 +425,7 @@ class BMS {
                     num7 = 1;
                     break;
                 case 35:
-                    if (flag6)
-                    {
+                    if (q > 0) {
                         num1 = 16;
                         continue;
                     }
@@ -441,16 +433,15 @@ class BMS {
                     num1 = 22;
                     continue;
                 case 36:
-                    if (!flag3)
-                    {
-                        num5 = 0;
-                        num1 = 23;
+                    if (bf[index3] !== 0) {
+                        num1 = 29;
                         continue;
                     }
-                    num1 = 29;
+                    num5 = 0;
+                    num1 = 23;
                     continue;
                 case 38:
-                    num8 = 1; //TODO: !cd(v) ? 1 : 0;
+                    num8 = 0; //TODO: !(isValidField(v)) ? 1 : 0;
                     flag7 = num8 !== 0;
                     num1 = 26;
                     continue;
@@ -459,7 +450,7 @@ class BMS {
                     num1 = 10;
                     continue;
                 case 40:
-                    if (flag4)
+                    if (num4 > 0.001)
                     {
                         num1 = 17;
                         continue;
@@ -470,7 +461,6 @@ class BMS {
                 default:
 
             }
-            flag5 = num7 !== 0;
             num1 = 0;
         }
 
@@ -480,7 +470,7 @@ class BMS {
     static getChargeCalibration(ah, ak, bg, bh, s, ay, a8) {
         let num1 = 1440;
         let num2 = 60;
-        let num3 = num2 * 60 * 24;
+        // let num3 = num2 * 60 * 24;
         let num4 = 0;
         let num5 = 7;
         let num6;
@@ -489,8 +479,6 @@ class BMS {
         let num9;
         let num10;
         let flag1 = s===ah;
-        let flag2;
-        let flag3;
         loop: while (true) {
             switch (num5) {
 
@@ -504,11 +492,10 @@ class BMS {
                     break;
                 case 2:
                     num6 = num10 - num4;
-                    flag2 = num6 <= num1;
                     num5 = 6;
                     break;
                 case 4:
-                    if (flag3)
+                    if (num10 > num4)
                     {
                         num5 = 2;
                         break;
@@ -520,15 +507,15 @@ class BMS {
                     num5 = 11;
                     break;
                 case 6:
-                    if (!flag2)
-                    {
-                        num6 -= num1;
-                        num8 = bg / 100 *  num7 +  ( num6 / num1 * ( bh / 100)) *  num7;
-                        num5 = 1;
+                    if (num6 <= num1) {
+                        num5 = 10;
                         break;
                     }
-                    num5 = 10;
+                    num6 -= num1;
+                    num8 = bg / 100 * num7 + (num6 / num1 * (bh / 100)) * num7;
+                    num5 = 1;
                     break;
+
                 case 7:
                     if (flag1)
                     {
@@ -545,7 +532,6 @@ class BMS {
                     num8 = 0;
                     num10 = ay / 60;
                     num7 = a8;
-                    flag3 = num10 > num4;
                     num5 = 4;
                     break;
                 case 10:
@@ -565,11 +551,8 @@ class BMS {
         let num2 = key & 15;
         let flag1 = len === 1;
         let num3 = 20;
-        let flag2 = false;
-        let flag3 = false;
-        let flag4 = false;
-        let flag5 = false;
         let num4 = 0;
+
 
         loop: while(true) {
             // console.log(intVal + '-'+num3);
@@ -606,8 +589,7 @@ class BMS {
                     break;
 
                 case 6:
-                    if(flag3) {
-                        flag2 = (intVal & 1) > 0;
+                    if(num2-- > 0) {
                         num3 = 7;
                         break;
                     }
@@ -615,17 +597,16 @@ class BMS {
                     break;
 
                 case 7:
-                    if(!flag2) {
-                        intVal >>>= 1;
-                        num3 = 13;
+                    if((intVal & 1) > 0) {
+                        num3 = 17;
                         break;
                     }
-                    num3 = 17;
+                    intVal >>>= 1;
+                    num3 = 13;
                     break;
 
                 case 8:
                 case 9:
-                    flag3 = num2-- > 0; //TODO: check it
                     num3 = 6;
                     break;
 
@@ -636,7 +617,6 @@ class BMS {
 
                 case 12:
                 case 16:
-                    flag5 = num2-- > 0;
                     num3 = 15;
                     break;
 
@@ -646,7 +626,7 @@ class BMS {
                     break;
 
                 case 14:
-                    if(flag4) {
+                    if((intVal & 1) > 0) {
                         num3 = 4;
                         break;
                     }
@@ -656,8 +636,7 @@ class BMS {
                     break;
 
                 case 15:
-                    if(flag5) {
-                        flag4 = (intVal & 1) > 0;
+                    if(num2-- > 0) {
                         num3 = 14;
                         break;
                     }
@@ -685,78 +664,25 @@ class BMS {
     }
 
     static decryptDate(intVal, key1, key2) {
-        let num1 = 55488;
-        let num2 = key1 & 15;
-        let num3 = (key2 >> 4) ^ num2;
-        let num4 = intVal;
-        let num5 = 2;
+        let key = (key2 >> 4) ^ (key1 & 0xF);
 
+        do {
+            key--;
 
-
-        let flag1 = false;
-        let flag2 = false;
-        let dateTime = null;
-
-        loop: while(true) {
-            // console.log(num4);
-            switch(num5) {
-                case 0:
-                case 2:
-                    flag1 = num3-- > 0;
-                    num5 = 8;
-                    break;
-
-                case 1:
-                case 4:
-                    num5 = 0;
-                    break;
-
-                case 3:
-                    num4 -= num1;
-                    num4 = (num4 >>> 0) & 0xFFFF; //Keep it unsigned 2byte short
-                    // dateTime = new Date((num4 >> 9) + 1980, (num4 >> 5 & 15) - 1, num4 & 31);
-                    let year = (num4 >> 9) + 1980;
-                    let month = num4 >> 5 & 15;
-                    let day = num4 & 31;
-                    dateTime = year.toString(10) + '-' + month.toString(10).padStart(2, '0') + '-' + day.toString(10).padStart(2, '0');
-                    dateTime = new Date(dateTime);
-                    num5 = 5;
-                    break;
-
-                case 5:
-                    break loop;
-
-                case 6:
-                    if(!flag2) {
-                        num4 >>= 1;
-                        num5 = 1;
-                        break;
-                    }
-                    num5 = 7;
-                    break;
-
-                case 7:
-                    num4 = (num4 >> 1) | 32768;
-
-                    num5 = 4;
-                    break;
-
-                case 8:
-                    if(!flag1) {
-                        num5 = 3;
-                        break;
-                    }
-
-                    flag2 = (num4 & 1) > 0;
-                    num5 = 6;
-                    break;
-
-                default:
-                    throw new Error("Hi2");
+            if((intVal & 1) > 0) {
+                intVal = (intVal >>> 1) | 0x8000;
+            } else {
+                intVal >>= 1;
             }
-        }
+        } while(key > 0)
 
-        return dateTime;
+        intVal += 10048;
+
+        let year = (intVal >> 9) + 1980;
+        let month = intVal >> 5 & 15;
+        let day = intVal & 31;
+        let dateTimeStr = year.toString(10) + '-' + month.toString(10).padStart(2, '0') + '-' + day.toString(10).padStart(2, '0');
+        return new Date(dateTimeStr);
     }
 
     static getRegisterHash(A_0) {
