@@ -257,7 +257,100 @@ class BMS {
         return buffer;
     }
 
-    static getReconditioningDays(ag, bf, q, w, bj, u, ba) {
+    // Hardware information: https://github.com/rick51231/motorola-battery-reader
+    static fromBatteryChip(rawBuffer, rawBuffer38, chipSerial) {
+        let buffer = Buffer.alloc(112);
+
+        buffer.writeUInt8(BMS.TYPE_QUERY_REPLY, 0); // Compatibility workaround
+        buffer.write(chipSerial, 4, 'hex');
+
+
+        // DS2433
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(6), 21 + 8); // j
+        buffer.writeUInt8(rawBuffer.readUInt8(8), 23); // l / CapacityRated
+
+        let blocks = []; // 17 used 18 total
+
+        for(let i = 70; i <= 104; i+= 2) {
+            blocks.push(rawBuffer.readUInt16BE(i));
+        }
+
+        // Block 0
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[0]+1), 25); // Date of manufacture
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[0]+3), 27); // Date of first use
+
+        // Block 1
+        buffer.writeUInt8(rawBuffer.readUInt8(blocks[1] + 1), 10); //Chemistry
+
+        // Block 2
+        buffer.writeUInt16LE(rawBuffer.readUInt16LE(blocks[2]+1), 21 + 36); // LED + Battery state
+
+        // Block 3
+        buffer.writeUInt8(rawBuffer.readUInt8(blocks[3]+2), 24); // Software version
+
+        // Block 4 w+1
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[4]+5), 21 + 16); // s
+
+        // Block 5
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[5]+1), 21 + 34); // calibrationCycles
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[5]+3), 21 + 82); // v
+        buffer.writeUInt8(rawBuffer.readUInt8(blocks[5]+6), 21 + 13); // a6
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[5]+7), 21 + 30); // ba / chargeCyclesNonImpres
+        // buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[5]+9), 21 + 32); // a9 / chargeCyclesNonImpres
+
+        // Block 6
+        let unknown = rawBuffer.subarray(blocks[6]+1, blocks[6]+1+10);
+        unknown.copy(buffer, 21 + 20);
+
+        // Block 7
+        let chargeAdded = rawBuffer.subarray(blocks[7]+1, blocks[7]+1+20);
+        chargeAdded.swap16();
+        chargeAdded.copy(buffer, 21 + 42);
+
+        // Block 8
+        let chargeRemaining = rawBuffer.subarray(blocks[8]+1, blocks[8]+1+20);
+        chargeRemaining.swap16();
+        chargeRemaining.copy(buffer, 21 + 62);
+
+        // Block 9 br+1 bs+3 bt+5 bu+7 bv+9 bw+11 bx+13
+        // Block 10 bp+3 bq+5 bj+7 bk+9 bl+10 bm+11
+        buffer.writeUInt16LE(rawBuffer.readUInt16BE(blocks[10]+7), 21 + 32); // a9 / chargeCyclesNonImpres
+        // Block 11 - b2+1 ... b6+5
+        // Block 12 - unused
+        // Block 13
+        let partNumberSize = rawBuffer.readUInt8(blocks[13]) - 2;
+        let partNumber = rawBuffer.subarray(blocks[13]+1, blocks[13]+1+partNumberSize);
+        partNumber.copy(buffer, 11);
+
+        //Block 14
+        buffer.writeUInt8(rawBuffer.readUInt8(blocks[14]+1), 21 + 14); //bg
+        buffer.writeUInt8(rawBuffer.readUInt8(blocks[14]+2), 21 + 15); //bh
+
+        //Block 15 - by+1 bz+2
+        //Block 16 - unused
+
+
+        //DS2438
+        buffer.writeUInt16LE(rawBuffer38.readUInt16LE(63), 21 + 10); //b9
+        buffer.writeUInt8(rawBuffer38.readUInt8(13), 21 + 12); //m
+        buffer.writeUInt16LE(rawBuffer38.readUInt16LE(58), 21 + 18); //ai + aj
+        buffer.writeUInt32LE(rawBuffer38.readUInt32LE(9), 21 + 84); //ay or pos=18
+        buffer.writeUInt16LE(rawBuffer38.readUInt16LE(56), 21 + 88); //ah
+        buffer.writeUInt16LE(rawBuffer38.readUInt16LE(3), 21 + 38); // Voltage
+        buffer.writeUInt16LE(rawBuffer38.readUInt16LE(1), 21 + 40); // Temperature
+
+
+        console.log(buffer.toString('hex'))
+        let bms = this.from(buffer);
+
+        bms.charge = Math.min(100, Math.round((bms.capacityCurrent / bms.capacityPotential) * 100)); // Or use capacityRated ?
+
+        return bms;
+    }
+
+
+
+    static getReconditioningDays(ag, bf, q, w, bj, u, ba, v) {
         let val1 = 0;
 
         let objArray = [ag, bf, q, w, bj, u];
