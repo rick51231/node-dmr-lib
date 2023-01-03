@@ -10,7 +10,7 @@ class MasterRegReply extends Packet {
     numPeers = 0;
 
     constructor(peerMode, peerFlags, peerProtocol, numPeers) {
-        super(Packet.MASTER_REG_REQ);
+        super(Packet.MASTER_REG_REPLY);
         this.peerMode = peerMode;
         this.peerFlags = peerFlags;
         this.peerProtocol = peerProtocol;
