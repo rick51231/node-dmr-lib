@@ -63,8 +63,12 @@ class DMRPayload {
     }
 
     static from(buffer) {
+        if(buffer.length<=6)
+            return null;
         let bytes = Uint8Array.from(buffer);
         let dmr = new DMRPayload();
+
+        //TODO: IPSC packet with (bytes[0] & 0b1000000), contains empty data. Example:840000000a1300273800277301000027ce40805e9fd42d47bbe50000000013000000
 
         //TODO: fix it
         // if((bytes[0] & 0b11000000)>0)
@@ -110,6 +114,8 @@ class DMRPayload {
         }
 
         if(dmr.rssiPresent) {
+            if(rssiOffset >= buffer.length) //TODO: proper handling IPSC Voice packets: 840000000aa000273b0027730100003a7a00805daa7659f6b5b0000000000a1441f1f8c6ffe437e5b9843948fff7e8486be437a8
+                return null;
             let val = buffer.readUInt16BE(rssiOffset);
             dmr.rssi = -( ( val >>> 8) +  (( val & 0xFF) * 1000 + 128) / 256000.0);
         }

@@ -22,6 +22,8 @@ class VoiceDataCall extends Packet {
     }
 
     static from(buffer, dataType) {
+        if(buffer.length < 13)
+            return null;
         let callClass;
 
         switch(dataType) {
@@ -61,7 +63,14 @@ class VoiceDataCall extends Packet {
         let rtpOffset = 13;
 
         call.rtp = RtpPacket.from(buffer.slice(rtpOffset, buffer.length));
+
+        if(call.rtp === null || rtpOffset+call.rtp.payloadOffset >= buffer.length)
+            return null;
+
         call.dmrPayload = DMRPayload.from(buffer.slice(rtpOffset+call.rtp.payloadOffset, buffer.length));
+
+        if(call.dmrPayload===null)
+            return null;
 
         return call;
     }
