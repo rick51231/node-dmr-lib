@@ -12,13 +12,17 @@ csbk / rpt mon / 3rd Party "Console" Application /
 byte 4 - flags2
 xnl con / xnl master / xnl slave / pkt auth ? / data call / voice call / ?? / master
 
+    }
+
  */
 
-
-
 class PeerProtocol {
-    static PROTOCOL_IPSC = 0x4;
+    static PROTOCOL_IPSC = 0x1;
+    static PROTOCOL_CAPACITY_PLUS = 0x2;
+    static PROTOCOL_APPLICATION = 0x3;
+    static PROTOCOL_LINKED_CAPACITY_PLUS = 0x4;
 
+    //TODO: min protocol - max protocol ?
     // Byte 0-1
     mainProtocolType = PeerProtocol.PROTOCOL_IPSC;
     mainProtocolVersion = 0x00;
@@ -31,27 +35,28 @@ class PeerProtocol {
         if(buffer.length!==4)
             return null;
 
+        let d = Array.from(buffer);
         let protocol = new PeerProtocol();
 
-        protocol.mainProtocolType = buffer.readUInt8(0);
-        protocol.mainProtocolVersion = buffer.readUInt8(1);
+        protocol.mainProtocolType = (d[0] & 0b11111100) >> 2;
+        protocol.mainProtocolVersion = ((d[0] & 0b00000011) << 8) | d[1];
 
-        protocol.oldProtocolType = buffer.readUInt8(2);
-        protocol.oldProtocolVersion = buffer.readUInt8(3);
+        protocol.oldProtocolType = (d[2] & 0b11111100) >> 2;
+        protocol.oldProtocolVersion = ((d[2] & 0b00000011) << 8) | d[3];
 
         return protocol;
     }
 
     getBuffer() {
-        let buffer = Buffer.alloc(4);
+        let d = Array(4);
 
-        buffer.writeUInt8(this.mainProtocolType, 0);
-        buffer.writeUInt8(this.mainProtocolVersion, 1);
+        d[0] = ((this.mainProtocolType << 2) & 0b11111100) | ((this.mainProtocolVersion >> 8) & 0b00000011);
+        d[1] = this.mainProtocolVersion & 0xFF;
 
-        buffer.writeUInt8(this.oldProtocolType, 2);
-        buffer.writeUInt8(this.oldProtocolVersion, 3);
+        d[2] = ((this.oldProtocolType << 2) & 0b11111100) | ((this.oldProtocolVersion >> 8) & 0b00000011);
+        d[3] = this.oldProtocolVersion & 0xFF;
 
-        return buffer;
+        return Buffer.from(d);
     }
 
 }
