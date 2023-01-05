@@ -279,7 +279,7 @@ class IPSCPeer extends EventEmitter {
         rtpPayload.marker = isFirst;
         rtpPayload.payloadType = isLast ? 94 : 93;
         rtpPayload.seq = this.dmrSeq;
-        rtpPayload.timestamp = getTime() & 0xFFFFFFFF;
+        rtpPayload.timestamp = (getTime() & 0xFFFFFFFF) >>> 0;
 
         let packet = dstIsGroup ? (new IPSC.GroupData()) : (new IPSC.PrivateData());
 
