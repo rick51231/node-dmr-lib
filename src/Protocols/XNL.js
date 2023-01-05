@@ -21,7 +21,7 @@ class XNL {
     src = 0;
     transactionID = 0;
 
-    data = Buffer.alloc(); //Can be buffer or XCMP class depending on isXCMP value
+    data = Buffer.alloc(0); //Can be buffer or XCMP class depending on isXCMP value
 
     constructor(opcode) {
         this.opcode = opcode;
