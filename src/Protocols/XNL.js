@@ -66,7 +66,7 @@ class XNL {
         let buffer = Buffer.alloc(XNL.HEADER_SIZE);
         let dataBuffer;
 
-        if(this.isXCMP)
+        if(this.isXCMP && this.data instanceof XCMP)
             dataBuffer = this.data.getBuffer();
         else
             dataBuffer = this.data;

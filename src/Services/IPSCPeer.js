@@ -1,16 +1,19 @@
 const IPSC = require('../Protocols/IPSC');
+const XCMP = require('../Protocols/XCMP');
+const XNL = require('../Protocols/XNL');
 const EventEmitter = require('events');
 const udp = require("dgram");
 const { getTime, delay } = require('./Utils');
 
-class IPSCPeer extends EventEmitter { //TODO: XNL support
+class IPSCPeer extends EventEmitter {
     static STATE_NONE = 0;
     static STATE_OK = 1;
     static STATE_CONNECTING = 2;
-    static STATE_XNL_INIT = 2;
+    static STATE_XNL_INIT = 3;
 
     static EVENT_DMRDATA = 'dmrdata';
     static EVENT_DATA = 'data';
+    static EVENT_XCMPDATA = 'xcmpdata';
     static EVENT_CONNECTED = 'connected';
     static EVENT_CLOSED = 'closed';
 
@@ -21,10 +24,15 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
     interval;
     dmrSeq = 0;
     streamId = 0;
+    xnlTXId = 0;
+    xnlRequestFlag = 0;
+    xnlPeerId = 0;
+    xnlLocalId = 0;
 
     isTXActive = false;
     sendDataBuffer = [];
     lastDataPacket = (new Date()).getTime();
+    xnlStarted = (new Date()).getTime();
 
     constructor(options) { //TODO: auth support
         super();
@@ -114,13 +122,26 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
         this.emit(IPSCPeer.EVENT_DATA, packet);
 
         if(this.state === IPSCPeer.STATE_CONNECTING && packet instanceof IPSC.MasterRegReply) {
-            this.state = IPSCPeer.STATE_OK;
-            this.emit(IPSCPeer.EVENT_CONNECTED);
+            if(this.options.xnlEnabled) {
+                this.state = IPSCPeer.STATE_XNL_INIT;
+                this.xnlStarted = (new Date()).getTime();
+                let xnl = new XNL(XNL.OPCODE_DEVICE_MASTER_QUERY);
+                this.sendXNL(xnl);
+            } else {
+                this.state = IPSCPeer.STATE_OK;
+                this.emit(IPSCPeer.EVENT_CONNECTED);
+            }
+
             return;
         }
 
         if(packet instanceof IPSC.MasterAliveReply) {
             this.lostPings = 0;
+            return;
+        }
+
+        if(packet instanceof IPSC.XNLPacket) {
+            this.onXNLData(packet.xnl);
             return;
         }
 
@@ -141,6 +162,103 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
                 slot: packet.slot
             });
         }
+    }
+
+    onXNLData(xnl) {
+        if(!this.options.xnlEnabled)
+            return;
+
+        if(xnl.opcode === XNL.OPCODE_DATA_MESSAGE) {
+            let replyPacket = new XNL(XNL.OPCODE_DATA_MESSAGE_ACK);
+
+            replyPacket.dst = xnl.src;
+            replyPacket.src = xnl.dst;
+            replyPacket.transactionID = xnl.transactionID;
+            replyPacket.flags = xnl.flags;
+            replyPacket.isXCMP = xnl.isXCMP;
+
+            console.log(replyPacket);
+            this.sendXNL(replyPacket);
+
+            if(xnl.isXCMP)
+                this.emit(IPSCPeer.EVENT_XCMPDATA, xnl.data);
+
+            return;
+        }
+
+        if(this.state === IPSCPeer.STATE_XNL_INIT) {
+            if (xnl.opcode === XNL.OPCODE_MASTER_STATUS_BROADCAST) {
+                console.log('[XCMP] Auth started, peer: ' + xnl.src);
+
+                this.xnlPeerId = xnl.src;
+
+                let replyPacket = new XNL(XNL.OPCODE_DEVICE_AUTH_KEY_REQUEST);
+
+                replyPacket.dst = this.xnlPeerId;
+
+                this.sendXNL(replyPacket);
+                return;
+            }
+
+            if (xnl.opcode === XNL.OPCODE_DEVICE_AUTH_KEY_REPLY) {
+                console.log('[XCMP] Auth sending key');
+
+                let authHash = xnl.data.slice(2, 10);
+                let authKey = XNL.createXNLHash(authHash, this.options.xnlKey);
+
+                let replyPacket = new XNL(XNL.OPCODE_DEVICE_CONNECTION_REQUEST);
+                // replyPacket.flags = 8;
+                replyPacket.dst = this.xnlPeerId;
+                replyPacket.data = Buffer.concat([Buffer.from('00000a01', 'hex'), authKey]); //TODO: make constants and enums
+
+                this.sendXNL(replyPacket);
+                return;
+            }
+
+            if (xnl.opcode === XNL.OPCODE_DEVICE_CONNECTION_REPLY) {
+                this.xnlLocalId = xnl.data.readUInt16BE(2);
+
+                console.log('[XCMP] Auth ok, localId: ' + this.xnlLocalId);
+
+                this.state = IPSCPeer.STATE_OK;
+                this.emit(IPSCPeer.EVENT_CONNECTED);
+            }
+        }
+    }
+
+    sendXCMP(xcmp) {
+        if(!this.options.xnlEnabled)
+            return;
+
+        if(this.xnlTXId> 65000)
+            this.xnlTXId = 0;
+        else
+            this.xnlTXId++;
+
+        if(this.xnlRequestFlag > 6)
+            this.xnlRequestFlag = 0;
+        else
+            this.xnlRequestFlag++;
+
+        let xnl = new XNL(XNL.OPCODE_DATA_MESSAGE);
+
+        xnl.isXCMP = true;
+        xnl.data = xcmp;
+        xnl.src = this.xnlLocalId;
+        xnl.dst = this.xnlPeerId;
+        xnl.transactionID = this.xnlTXId;
+        xnl.flags = this.xnlRequestFlag;
+
+        this.sendXNL(xnl);
+    }
+
+    sendXNL(xnl) {
+        if(!this.options.xnlEnabled)
+            return;
+
+        let ipsc = new IPSC.XNLPacket(xnl);
+
+        this.send(ipsc);
     }
 
     sendDMRData(data, src_id, dst_id, dstIsGroup, isFirst, isLast, slot=0) {
@@ -197,7 +315,7 @@ class IPSCPeer extends EventEmitter { //TODO: XNL support
         if(this.state===IPSCPeer.STATE_NONE)
             return;
 
-        if(this.state===IPSCPeer.STATE_CONNECTING || this.lostPings > 2) {
+        if(this.state!==IPSCPeer.STATE_OK || this.lostPings > 2) {
             console.log('Timeout');
             this.close(); //Close by timeout
             return;
