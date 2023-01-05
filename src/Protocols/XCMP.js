@@ -2,16 +2,22 @@
 class XCMP {
     static OPCODE_RADIO_STATUS_REQUEST = 0x000e;
     static OPCODE_RADIO_STATUS_REPLY = 0x800e;
+    static OPCODE_CLONE_READ_REQUEST = 0x010a;
+    static OPCODE_CLONE_READ_REPLY = 0x810a;
 
     static STATUS_OK = 0x00;
 
     // https://github.com/pboyd04/Moto.Net/blob/3364ecfa4f7c1229136b1265313cd42dc8db1c90/Moto.Net/Mototrbo/XNL/XCMP/XCMPStatus.cs
-    // ModelNumber = 0x07,
-    // SerialNumber = 0x08,
-    // RepeaterSerialNumber = 0x0B,
-    // RadioID = 0x0E,
-    // RadioName = 0x0F, //Only seems to work on repeaters for some reason... very irritating...
-    // RadioAlias = 0x0F
+    static REPEATER_REGISTER_MODEL_NUMBER = 0x07;
+    static REPEATER_REGISTER_SERIAL_NUMBER = 0x08;
+    static REPEATER_REGISTER_ESN = 0x09;
+    static REPEATER_REGISTER_PRODUCT_SERIAL_NUMBER = 0x0B;
+    static REPEATER_REGISTER_SIGNALING_MODE = 0x0D;
+    static REPEATER_REGISTER_MOTOTRBOID = 0x0E;
+    static REPEATER_REGISTER_RADIO_ALIAS = 0x0F;
+    static REPEATER_REGISTER_SELECT_5_ID = 0x16;
+    static REPEATER_REGISTER_UPTIME_AND_TIMESTAMP = 0x4D;
+
 
     // RDAC params
     static REPEATER_REGISTER_RSSI = 0x02;
@@ -32,7 +38,6 @@ class XCMP {
     static REPEATER_REGISTER_PA_CURRENT4 = 0x40;
     static REPEATER_REGISTER_PA_TEMPERATURE = 0x41;
     static REPEATER_REGISTER_WSWR = 0x43;
-
 
     opcode;
     data;
