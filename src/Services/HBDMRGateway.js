@@ -36,7 +36,7 @@ class HBDMRGateway extends EventEmitter {
         };
 
         this.socket.on('close', () => {
-            console.log('Close');
+            // Is it possible on udp socket ?
         });
         this.socket.on('message', (msg, info) => {
             this.onData(msg, info);
@@ -144,7 +144,7 @@ class HBDMRGateway extends EventEmitter {
         while(this.sendDataBuffer.length > 0) {
             let p = this.sendDataBuffer.shift();
             this.send(p);
-            console.log('S: '+p.getBuffer().toString('hex')+ ' ['+this.sendDataBuffer.length+']');
+            // console.log('S: '+p.getBuffer().toString('hex')+ ' ['+this.sendDataBuffer.length+']');
 
             await delay(60);
         }

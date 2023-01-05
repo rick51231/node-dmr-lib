@@ -340,7 +340,6 @@ class BMS {
         buffer.writeUInt16LE(rawBuffer38.readUInt16LE(1), 21 + 40); // Temperature
 
 
-        console.log(buffer.toString('hex'))
         let bms = this.from(buffer);
 
         bms.charge = Math.min(100, Math.round((bms.capacityCurrent / bms.capacityPotential) * 100)); // Or use capacityRated ?

@@ -52,7 +52,7 @@ class IPSCPeer extends EventEmitter {
         this.socket = udp.createSocket('udp4');
 
         this.socket.on('close', () => {
-            console.log('Close');
+           // Is it possible on udp socket ?
         });
         this.socket.on('message', (msg) => {
             this.onData(msg);
@@ -114,7 +114,6 @@ class IPSCPeer extends EventEmitter {
         // console.log('D: '+buffer.toString('hex'));
         let packet = IPSC.Packet.from(buffer);
 
-        console.log('P: '+JSON.stringify(packet));
 
         if(packet===null)
             return;
@@ -177,7 +176,6 @@ class IPSCPeer extends EventEmitter {
             replyPacket.flags = xnl.flags;
             replyPacket.isXCMP = xnl.isXCMP;
 
-            console.log(replyPacket);
             this.sendXNL(replyPacket);
 
             if(xnl.isXCMP)
@@ -188,8 +186,6 @@ class IPSCPeer extends EventEmitter {
 
         if(this.state === IPSCPeer.STATE_XNL_INIT) {
             if (xnl.opcode === XNL.OPCODE_MASTER_STATUS_BROADCAST) {
-                console.log('[XCMP] Auth started, peer: ' + xnl.src);
-
                 this.xnlPeerId = xnl.src;
 
                 let replyPacket = new XNL(XNL.OPCODE_DEVICE_AUTH_KEY_REQUEST);
@@ -201,8 +197,6 @@ class IPSCPeer extends EventEmitter {
             }
 
             if (xnl.opcode === XNL.OPCODE_DEVICE_AUTH_KEY_REPLY) {
-                console.log('[XCMP] Auth sending key');
-
                 let authHash = xnl.data.slice(2, 10);
                 let authKey = XNL.createXNLHash(authHash, this.options.xnlKey);
 
@@ -217,8 +211,6 @@ class IPSCPeer extends EventEmitter {
 
             if (xnl.opcode === XNL.OPCODE_DEVICE_CONNECTION_REPLY) {
                 this.xnlLocalId = xnl.data.readUInt16BE(2);
-
-                console.log('[XCMP] Auth ok, localId: ' + this.xnlLocalId);
 
                 this.state = IPSCPeer.STATE_OK;
                 this.emit(IPSCPeer.EVENT_CONNECTED);
@@ -316,7 +308,6 @@ class IPSCPeer extends EventEmitter {
             return;
 
         if(this.state!==IPSCPeer.STATE_OK || this.lostPings > 2) {
-            console.log('Timeout');
             this.close(); //Close by timeout
             return;
         }
@@ -337,7 +328,7 @@ class IPSCPeer extends EventEmitter {
         while(this.sendDataBuffer.length > 0) {
             let p = this.sendDataBuffer.shift();
             this.send(p);
-            console.log('S: '+p.getBuffer().toString('hex')+ ' ['+this.sendDataBuffer.length+']');
+            // console.log('S: '+p.getBuffer().toString('hex')+ ' ['+this.sendDataBuffer.length+']');
 
             await delay(60);
 

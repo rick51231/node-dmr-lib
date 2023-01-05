@@ -132,7 +132,7 @@ class LRRP {
 
                            if(tokenId===DMRConst.LRRP_TOKEN_LOCATION_3D_ALT) {
                                let [altitudeAccuracy, count] = LRRP.parseLRRPFloat(buffer, pos);
-                               console.log(count);
+
                                lrrp.locationData.altitudeAccuracy = altitudeAccuracy;
                                pos += count;
                            }
