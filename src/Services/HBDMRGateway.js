@@ -19,11 +19,11 @@ class HBDMRGateway extends EventEmitter {
     state = HBDMRGateway.STATE_NONE;
     peerInfo;
     lastPing = 0; //TODO: timeout support
-    streamId = Math.round((new Date()).getTime()/1000);
+    streamId = Math.round(getTime()/1000);
     packetSeq = 0;
 
     sendDataBuffer = [];
-    lastDataPacket = (new Date()).getTime();
+    lastDataPacket = getTime();
 
     constructor(options) {
         super();
@@ -82,7 +82,7 @@ class HBDMRGateway extends EventEmitter {
 
             this.state = HBDMRGateway.STATE_OK;
             this.peerInfo = info;
-            this.lastPing = (new Date()).getTime();
+            this.lastPing = getTime();
 
             let packet = new HomeBrew.GatewayPing();
             this.send(packet);
@@ -94,7 +94,7 @@ class HBDMRGateway extends EventEmitter {
             return;
 
         if(packet instanceof HomeBrew.VoiceData) {
-            this.lastDataPacket = (new Date()).getTime();
+            this.lastDataPacket = getTime();
 
             if(packet.frame_type === HomeBrew.VoiceData.FRAME_TYPE_DATA_SYNC)
                 this.emit(HBDMRGateway.EVENT_DMRDATA, {
@@ -129,7 +129,7 @@ class HBDMRGateway extends EventEmitter {
         this.sendDataBuffer.push(packet);
 
         if(isLast) {
-            this.streamId = Math.round((new Date()).getTime()/1000);
+            this.streamId = Math.round(getTime()/1000);
         }
     }
 

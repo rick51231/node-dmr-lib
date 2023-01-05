@@ -31,8 +31,8 @@ class IPSCPeer extends EventEmitter {
 
     isTXActive = false;
     sendDataBuffer = [];
-    lastDataPacket = (new Date()).getTime();
-    xnlStarted = (new Date()).getTime();
+    lastDataPacket = getTime();
+    xnlStarted = getTime();
 
     constructor(options) { //TODO: auth support
         super();
@@ -123,7 +123,7 @@ class IPSCPeer extends EventEmitter {
         if(this.state === IPSCPeer.STATE_CONNECTING && packet instanceof IPSC.MasterRegReply) {
             if(this.options.xnlEnabled) {
                 this.state = IPSCPeer.STATE_XNL_INIT;
-                this.xnlStarted = (new Date()).getTime();
+                this.xnlStarted = getTime();
                 let xnl = new XNL(XNL.OPCODE_DEVICE_MASTER_QUERY);
                 this.sendXNL(xnl);
             } else {
