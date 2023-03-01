@@ -296,7 +296,7 @@ class IPSCPeer extends EventEmitter {
         this.sendDataBuffer.push(packet);
 
         if(isLast) {
-            if(this.streamId>255)
+            if(this.streamId>=255)
                 this.streamId = 0;
             else
                 this.streamId++;
