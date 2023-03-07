@@ -16,7 +16,7 @@ class GatewayRegReq extends Packet {
 
     static from(buffer) {
         if(buffer.length!==111)
-            return undefined;
+            return null;
 
         let dmrc = new GatewayRegReq();
         let bufferStr = buffer.toString('binary');
