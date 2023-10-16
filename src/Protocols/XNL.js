@@ -3,16 +3,24 @@ const XCMP = require('./XCMP');
 class XNL {
     static HEADER_SIZE = 14;
 
+    static OPCODE_MASTER_PRESENT_BROADCAST = 0x01;
     static OPCODE_MASTER_STATUS_BROADCAST = 0x02;
     static OPCODE_DEVICE_MASTER_QUERY = 0x03;
     static OPCODE_DEVICE_AUTH_KEY_REQUEST = 0x04;
     static OPCODE_DEVICE_AUTH_KEY_REPLY = 0x05;
-    static OPCODE_DEVICE_CONNECTION_REQUEST = 0x06;
-    static OPCODE_DEVICE_CONNECTION_REPLY = 0x07;
+    static OPCODE_DEVICE_CONNECTION_REQUEST = 0x06; // 00-01 preferredXNLAddress 02 deviceType 03 authentication level (AUTHENTICATION_LEVEL_*)
+    static OPCODE_DEVICE_CONNECTION_REPLY = 0x07; // 00 result code(fail, success) 01 TransactionIdBase 02-03 address 04 XCMP.DEVICE_TYPE_* 05 DeviceNumber 06-14 AuthKey
     static OPCODE_DEVICE_SYS_MAP_REQUEST = 0x08;
-    static OPCODE_DEVICE_SYS_MAP_REPLY = 0x09;
+    static OPCODE_DEVICE_SYS_MAP_REPLY = 0x09; // 00-01 num /  XNLSysMapInfo[](00 XCMP.DEVICE_TYPE_* 01 DeviceNumber 02-03 address 04 AuthIndex)
+    static OPCODE_DEVICE_RESET_MESSAGE = 0x0a;
     static OPCODE_DATA_MESSAGE = 0x0b;
     static OPCODE_DATA_MESSAGE_ACK = 0x0c;
+
+    static AUTHENTICATION_LEVEL_INTERNAL = 0x00;
+    static AUTHENTICATION_LEVEL_EXTERNAL = 0x01;
+    static AUTHENTICATION_LEVEL_EXTERNAL_PRIVATE = 0x00;
+
+
 
     opcode;
     isXCMP = false;
