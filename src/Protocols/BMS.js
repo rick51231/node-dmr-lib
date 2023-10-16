@@ -344,6 +344,9 @@ class BMS {
 
         bms.charge = Math.min(100, Math.round((bms.capacityCurrent / bms.capacityPotential) * 100)); // Or use capacityRated ?
 
+        if(isNaN(bms.charge))
+            bms.charge = 0;
+
         return bms;
     }
 
