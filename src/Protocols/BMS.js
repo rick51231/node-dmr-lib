@@ -163,7 +163,7 @@ class BMS {
 
                     let ay = buffer.readUInt32LE(offset + 84);
                     let ah = buffer.readUInt16LE(offset + 88);
-                    let m = buffer.readUInt8(offset + 12);
+                    let currentCharge = buffer.readUInt8(offset + 12);
                     let bg = buffer.readUInt8(offset + 14) / 10;
                     let bh = buffer.readUInt8(offset + 15) / 10;
                     let ai = buffer.readUInt8(offset + 18);
@@ -182,7 +182,7 @@ class BMS {
                     let chargeCalibration = this.getChargeCalibration(ah, ak, bg, bh, s, ay, a8);
 
                     bms.capacityPotential = Math.floor(a8);
-                    bms.capacityCurrent = Math.floor(((1000 * m) / (2048 * b9)) - chargeCalibration);
+                    bms.capacityCurrent = Math.max(0, Math.floor(((1000 * currentCharge) / (2048 * b9)) - chargeCalibration));
 
                     bms.daysSinceCalibration = Math.floor(at > v ? at - v : 0); //TODO: au - v ?
                     bms.daysSinceLastRemovalFromImpres = Math.floor(at - ah);
@@ -341,6 +341,7 @@ class BMS {
 
 
         let bms = this.from(buffer);
+        console.log(buffer.toString('hex'))
 
         bms.charge = Math.min(100, Math.round((bms.capacityCurrent / bms.capacityPotential) * 100)); // Or use capacityRated ?
 
