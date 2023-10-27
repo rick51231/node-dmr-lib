@@ -351,412 +351,90 @@ class BMS {
         return bms;
     }
 
-
-
     static getReconditioningDays(ag, bf, q, w, bj, u, ba, v) {
-        let val1 = 0;
+        if (this.isCalibrationNeeded(u, ba, v))
+            return 0;
 
-        let objArray = [ag, bf, q, w, bj, u];
-
-        let index1 = 0;
-        let num1 = 12;
-        let num2 = 0;
-
-        let num3 = 0.0;
-        let num4 = 0.0;
         let index2 = 0;
-        let A_0 = 0;
-        let calibrationNeeded = false;
-        let num5 = 0;
-        let index3 = 0;
+        let num3 = 0.0;
         let num6 = 0.0;
-        let flag7 = false;
-        let num7 = 0;
-        let num8 = 0;
 
-        loop: while(true) {
-            switch (num1)
-            {
-                case 0:
-                    if (num7 !== 0) {
-                        num1 = 15;
-                        continue;
-                    }
-                    ++index1;
-                    num1 = 41;
-                    continue;
-                case 1:
-                case 20:
-                    let val2 = (30 - Math.min(30, u));
-                    num2 = Math.min(val1, val2);
-                    num1 = 21;
-                    continue;
-                case 2:
-                    if (index1 >= objArray.length)
-                    {
-                        num1 = 39;
-                        continue;
-                    }
-                    A_0 = objArray[index1];
-                    num1 = 5;
-                    continue;
-                case 3:
-                    num1 = 32;
-                    continue;
-                case 4:
-                case 24:
-                    index3 =  Math.round(num6 / 10.0);
-                    num1 = 36;
-                    continue;
-                case 5:
-                    num1 = 27; //TODO: !(isValidField(A_0))) ? 33 : 27;
-                    continue;
-                case 6:
-                    num1 = v !== 0 ? 28 : 8;
-                    continue;
-                case 7:
-                    if (index2 < 10) {
-                        num3 +=  ag[index2] * (10 * index2 + 5);
-                        num6 += ag[index2];
-                        ++index2;
-                        num1 = 25;
-                        continue;
+        while (true) {
+            if (index2 >= 10)
+                break;
 
-                    }
-                    num1 = 31;
-                    continue;
-                case 8:
-                    num1 = 38;
-                    continue;
-                case 9:
-                    num7 = 0; //TODO: !(isValidItem(A_0)) ? 1 : 0;
-                    break;
-                case 10:
-                    if (calibrationNeeded)  {
-                        num1 = 18;
-                        continue;
-                    }
-                    num6 = 0.0;
-                    num3 = 0.0;
-                    num4 = 0.0;
-                    num5 = 0;
-                    index2 = 0;
-                    num1 = 11;
-                    continue;
-                case 11:
-                case 25:
-                    num1 = 7;
-                    continue;
-                case 12:
-                case 41:
-                    num1 = 2;
-                    continue;
-                case 13:
-                    num6 = 95.0;
-                    num1 = 4;
-                    continue;
-                case 14:
-                case 23:
-                    num1 = 35;
-                    continue;
-                case 15:
-                    num1 = 6;
-                    continue;
-                case 16:
-                    num4 = (w + bj) / q;
-                    num1 = 37;
-                    continue;
-                case 17:
-                    val1 = num5 / num4;
-                    num1 = 1;
-                    continue;
-                case 18:
-                    num2 = val1;
-                    num1 = 19;
-                    continue;
-                case 19:
-                case 34:
-                    break loop;
-                case 21:
-                    break loop;
-                case 22:
-                case 37:
-                    num1 = 40;
-                    continue;
-                case 26:
-                    if (num8 !== 0)
-                    {
-                        num1 = 3;
-                        continue;
-                    }
-                    num1 = 32;
-                    continue;
-                case 27:
-                    num1 = 9;
-                    continue;
-                case 28:
-                    num8 = 1;
-                    num1 = 26;
-                    continue;
-                case 29:
-                    num5 = ba / bf[index3];
-                    num1 = 14;
-                    continue;
-                case 30:
-                    if (num3 === 0.0) {
-                        num1 = 13;
-                        continue;
-                    }
-                    num6 /= num3;
-                    num1 = 24;
-                    continue;
-                case 31:
-                    num1 = 30;
-                    continue;
-                case 32:
-                    num2 = val1;
-                    num1 = 34;
-                    continue;
-                case 33:
-                    num7 = 1;
-                    break;
-                case 35:
-                    if (q > 0) {
-                        num1 = 16;
-                        continue;
-                    }
-                    num4 = w + bj;
-                    num1 = 22;
-                    continue;
-                case 36:
-                    if (bf[index3] !== 0) {
-                        num1 = 29;
-                        continue;
-                    }
-                    num5 = 0;
-                    num1 = 23;
-                    continue;
-                case 38:
-                    num8 = 0; //TODO: !(isValidField(v)) ? 1 : 0;
-                    flag7 = num8 !== 0;
-                    num1 = 26;
-                    continue;
-                case 39:
-                    calibrationNeeded = false; //TODO: IsCalibrationNeeded;
-                    num1 = 10;
-                    continue;
-                case 40:
-                    if (num4 > 0.001)
-                    {
-                        num1 = 17;
-                        continue;
-                    }
-                    val1 = 1;
-                    num1 = 20;
-                    continue;
-                default:
-
-            }
-            num1 = 0;
+            num3 += ag[index2] * (10 * index2 + 5);
+            num6 += ag[index2];
+            ++index2;
         }
 
-        return num2;
+        num6 = num3 === 0.0 ? 95.0 : num6/num3;
+
+        let index3 = Math.round(num6 / 10.0);
+        let num5 = bf[index3] !== 0 ? ba / bf[index3] : 0;
+        let num4 = q > 0 ? (w + bj) / q : w + bj;
+
+        let val1 = num4 > 0.001 ? num5 / num4 : 1;
+        let val2 = (30 - Math.min(30, u));
+
+        return Math.min(val1, val2);
+    }
+
+    static isCalibrationNeeded(u, ba, v) {
+        if(u <= 30 && ba > 0 && v!==0)
+            return false;
+
+        return true;
     }
 
     static getChargeCalibration(ah, ak, bg, bh, s, ay, a8) {
         let num1 = 1440;
-        let num2 = 60;
-        // let num3 = num2 * 60 * 24;
         let num4 = 0;
-        let num5 = 7;
-        let num6;
-        let num7;
-        let num8;
-        let num9;
-        let num10;
-        let flag1 = s===ah;
-        loop: while (true) {
-            switch (num5) {
 
-                case 0:
-                    num9 = num8;
-                    num5 = 8;
-                    break;
-                case 1:
-                case 3:
-                    num5 = 0;
-                    break;
-                case 2:
-                    num6 = num10 - num4;
-                    num5 = 6;
-                    break;
-                case 4:
-                    if (num10 > num4)
-                    {
-                        num5 = 2;
-                        break;
-                    }
-                    num5 = 0;
-                    break;
-                case 5:
-                    num4 = ak / num2;
-                    num5 = 11;
-                    break;
-                case 6:
-                    if (num6 <= num1) {
-                        num5 = 10;
-                        break;
-                    }
-                    num6 -= num1;
-                    num8 = bg / 100 * num7 + (num6 / num1 * (bh / 100)) * num7;
-                    num5 = 1;
-                    break;
-
-                case 7:
-                    if (flag1)
-                    {
-                        num5 = 5;
-                        break;
-                    }
-                    num4 = s * num1;
-                    num5 = 9;
-                    break;
-                case 8:
-                    break loop;
-                case 9:
-                case 11:
-                    num8 = 0;
-                    num10 = ay / 60;
-                    num7 = a8;
-                    num5 = 4;
-                    break;
-                case 10:
-                    num8 =   num6 /  num1 * ( bg / 100) *  num7;
-                    num5 = 3;
-                    break;
-                default:
-
-            }
+        if (s === ah) {
+            num4 = ak / 60;
+        } else {
+            num4 = s * num1;
         }
+        let num8 = 0;
+        let num10 = ay / 60;
+        let num7 = a8;
+        if (num10 > num4) {
+            let num6 = num10 - num4;
+            if (num6 <= num1) {
+                num8 = num6 / num1 * (bg / 100) * num7;
+            } else {
+                num6 -= num1;
+                num8 = bg / 100 * num7 + (num6 / num1 * (bh / 100)) * num7;
+            }
 
-        return num9;
+        }
+        return num8;
     }
 
     static decryptInt(intVal, len, key) {
-        let num1 = 216;
+        let key2 = 0xD8;
         let num2 = key & 15;
-        let flag1 = len === 1;
-        let num3 = 20;
-        let num4 = 0;
+        let is8Bit = len === 1;
 
-
-        loop: while(true) {
-            // console.log(intVal + '-'+num3);
-            switch(num3) {
-                case 0:
-                    break loop;
-
-                case 1:
-                    intVal = intVal - num1;
-                    intVal = (intVal >>> 0) & 0xFF;
-                    num3 = 3;
-                    break;
-
-                case 2:
-                    intVal -= num1;
-                    intVal = (intVal >>> 0) & 0xFFFF;
-                    num3 = 10;
-                    break;
-
-                case 3:
-                case 10:
-                    num4 = intVal;
-                    num3 = 0;
-                    break;
-
-                case 4:
-                    intVal >>= 1;
-                    intVal |= 128;
-                    num3 = 18;
-                    break;
-
-                case 5:
-                    num3 = 12;
-                    break;
-
-                case 6:
-                    if(num2-- > 0) {
-                        num3 = 7;
-                        break;
-                    }
-                    num3 = 2;
-                    break;
-
-                case 7:
-                    if((intVal & 1) > 0) {
-                        num3 = 17;
-                        break;
-                    }
-                    intVal >>>= 1;
-                    num3 = 13;
-                    break;
-
-                case 8:
-                case 9:
-                    num3 = 6;
-                    break;
-
-                case 11:
-                case 18:
-                    num3 = 16;
-                    break;
-
-                case 12:
-                case 16:
-                    num3 = 15;
-                    break;
-
-                case 13:
-                case 19:
-                    num3 = 8;
-                    break;
-
-                case 14:
-                    if((intVal & 1) > 0) {
-                        num3 = 4;
-                        break;
-                    }
-
-                    intVal >>>= 1;
-                    num3 = 11;
-                    break;
-
-                case 15:
-                    if(num2-- > 0) {
-                        num3 = 14;
-                        break;
-                    }
-
-                    num3 = 1;
-                    break;
-
-                case 17:
-                    intVal >>>= 1;
-                    intVal |= 32768;
-                    num3 = 19;
-                    break;
-
-                case 20:
-                    num3 = !flag1 ? 9 : 5;
-                    break;
-
-                default:
-                    throw new Error("Hi");
-
+        while (true) {
+            if (num2-- <= 0) {
+                break;
             }
+
+            if ((intVal & 1) > 0) {
+                intVal >>>= 1;
+                intVal |= is8Bit ? 0x80 : 0x8000;
+                continue;
+            }
+
+            intVal >>>= 1;
         }
 
-        return num4;
+        intVal -= key2;
+        intVal = (intVal >>> 0) & (is8Bit ? 0xFF : 0xFFFF);
+
+        return intVal;
     }
 
     static decryptDate(intVal, key1, key2) {
@@ -775,8 +453,8 @@ class BMS {
         intVal += 10048;
 
         let year = (intVal >> 9) + 1980;
-        let month = intVal >> 5 & 15;
-        let day = intVal & 31;
+        let month = intVal >> 5 & 0x0F;
+        let day = intVal & 0x1F;
         let dateTimeStr = year.toString(10) + '-' + month.toString(10).padStart(2, '0') + '-' + day.toString(10).padStart(2, '0');
         return new Date(dateTimeStr);
     }
@@ -785,7 +463,7 @@ class BMS {
         let A_0_1 = this.h();
 
         let t1 = this.c2(A_0_1, A_0_1.length, A_0, A_0.length);
-        let [A_1, ] = this.c3(t1, /*222,*/ 3, A_0);
+        let [A_1, ] = this.c3(t1, 3, A_0);
 
         return A_1;
     }
@@ -795,69 +473,30 @@ class BMS {
         let A_0 = [147, 236, 118, 219, 93, 197];
         let A_2 = [56, 93, 156, 135];
 
-        let [A_1,] = this.c3(this.c2(A_0, A_0.length, A_2, A_2.length), /*222,*/ 5, A_3);
+        let [A_1,] = this.c3( this.c2(A_0, A_0.length, A_2, A_2.length), 5, A_3);
+
         return A_1;
     }
 
+    // rc4_transform(sbox, key, key len)
     static c3(A_0, /*A_1_old,*/ A_2, A_3) { // rc4_sbox_t c(rc4_sbox_t A_0, ref byte[] A_1, ushort A_2, byte[] A_3)
         let A_1 = [];
         let index1 = A_0.a;
         let index2 = A_0.b;
         let c = A_0.c;
-        let index3 = 0;
-        let num1 = 7;
-        let flag1 = false;
-        let num2 = 0;
-        // let flag2 = false;
 
-        loop: while(true) {
-            switch (num1)
-            {
-                case 0:
-                    if (!flag1) {
-                        num1 = 5;
-                        break;
-                    }
-                    index1 =  (index1 + 1 & 0xFF);
-                    index2 = (index2 +c[ index1] & 0xFF);
-                    num2 = c[index1];
-                    c[index1] = c[index2];
-                    c[index2] = num2;
-                    // flag2 = A_1 != null;
-                    num1 = 1;
-                    break;
-                case 1:
-                    // if (flag2)
-                    // {
-                    num1 = 3;
-                    break;
-                // }
-                // num1 = 4;
-                // break;
-                case 2:
-                    break loop;
-                case 3:
-                    A_1[index3] = (A_3[ index3] ^  c[ c[ index1] +  num2 & 0xFF]);
-                    num1 = 4;
-                    break;
-                case 4:
-                    A_0.a = index1;
-                    A_0.b = index2;
-                    ++index3;
-                    num1 = 6;
-                    break;
-                case 5:
-                    num1 = 2;
-                    break;
-                case 6:
-                case 7:
-                    flag1 = index3 < A_2;
-                    num1 = 0;
-                    break;
-                default:
+        for(let index3 = 0; index3 < A_2; index3++) {
+            index1 = (index1 + 1 & 0xFF);
+            index2 = (index2 +c[ index1] & 0xFF);
+            let num2 = c[index1];
+            c[index1] = c[index2];
+            c[index2] = num2;
 
-            }
+            A_1[index3] = (A_3[ index3] ^  c[ c[ index1] +  num2 & 0xFF]);
         }
+
+        A_0.a = index1;
+        A_0.b = index2;
 
         return [A_1, A_0];
     }
@@ -869,119 +508,43 @@ class BMS {
         let A_1_2 = A_1 + A_3;
         let numArray = [];
         numArray = A_0;
-        let index = 0;
-        let num = 4;
-        let flag = false;
 
-        loop: while(true) {
-            switch(num) {
-                case 0:
-                case 4:
-                    flag = index <  A_3;
-                    num = 1;
-                    break;
-                case 1:
-                    if (!flag)   {
-                        num = 2;
-                        break;
-                    }
-                    numArray[A_1 + index] = A_2[index];
-                    ++index;
-                    num = 0;
-                    break;
-                case 2:
-                    A_0_1 = this.c1(numArray, A_1_2);
-                    // let par = JSON.parse(JSON.stringify(A_0_1));
-                    [A_1_1, A_0_1]  = this.c3(A_0_1, /*123,*/ 256, A_1_1);
-                    num = 3;
-                    break;
-                case 3:
-                    break loop;
-            }
-
-
+        for(let index = 0; index < A_3; index++) {
+            numArray[A_1 + index] = A_2[index];
         }
+
+        A_0_1 = this.c1(numArray, A_1_2);
+
+        [A_1_1, A_0_1]  = this.c3(A_0_1, 256, A_1_1);
+
         return A_0_1;
     }
 
+    // rc4_init (key, key len)
     static c1(A_0, A_1) { // rc4_sbox_t c(byte[] A_0, ushort A_1)
         let rc4SboxT1 = { c: [], a: 0, b: 0};
         let numArray = [];
 
-
         let c = rc4SboxT1.c;
         let index1 = 0;
-        let index2 = 0;
 
-        let num1 = 7;
-        let flag1 = false;
-        let flag2 = false;
-        let flag3 = false;
+        for (let index2 = 0; index2 < 256; index2++) {
+            if (index1 === A_1)
+                index1 = 0;
 
-        loop: while (true) {
-            switch (num1) {
-                case 0:
-                    index2 = index1 = 0;
-                    num1 = 2;
-                    break;
+            c[index2] = index2;
+            numArray[index2] = A_0[index1];
 
-                case 1:
-                case 7:
-                    flag3 = index2 < 256;
-                    num1 = 3;
-                    break;
+            ++index1;
+        }
 
-                case 2:
-                case 4:
-                    flag2 = index2 < 256;
-                    num1 = 8;
-                    break;
-                case 3:
-                    if (flag3)
-                    {
-                        flag1 = index1 === A_1;
-                        num1 = 6;
-                        break;
-                    }
-                    num1 = 0;
-                    break;
-                case 5:
-                    num1 = 11;
-                    break;
-                case 6:
-                    if (flag1) {
-                        num1 = 9;
-                        break;
-                    }
-                    num1 = 10;
-                    break;
-                case 8:
-                    if (flag2) {
-                        index1 = (index1 +c[index2] + numArray[index2] & 0xFF);
+        index1 = 0;
+        for (let index2 = 0; index2 < 256; index2++) {
+            index1 = (index1 + c[index2] + numArray[index2] & 0xFF);
 
-                        let num2 = c[index2];
-                        c[index2] = c[index1];
-                        c[index1] = num2;
-                        ++index2;
-                        num1 = 4;
-                        break;
-                    }
-                    num1 = 5;
-                    break;
-                case 9:
-                    index1 =  0;
-                    num1 = 10;
-                    break;
-                case 10:
-                    c[index2] = index2;
-                    numArray[index2] = A_0[index1];
-                    ++index2;
-                    ++index1;
-                    num1 = 1;
-                    break;
-                case 11:
-                    break loop;
-            }
+            let num2 = c[index2];
+            c[index2] = c[index1];
+            c[index1] = num2;
         }
 
         // rc4SboxT1.a = 0;
@@ -989,7 +552,6 @@ class BMS {
 
         return rc4SboxT1;
     }
-
 
     static radioFamily = {
         1	: 'XTS 5000/3500/3000',
