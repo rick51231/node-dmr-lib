@@ -10,37 +10,6 @@ module.exports = Object.freeze({
 
 
 
-    BMS_DISCOVERY            : 0x01,
-    BMS_REGISTRATION         : 0x02,
-    BMS_REGISTRATION_ACK     : 0x03,
-    BMS_QUERY_REQUEST        : 0x04,
-    BMS_QUERY_REPLY          : 0x05,
-
-    BMS_QUERY_TYPE_SHORT    : 0x1,
-    BMS_QUERY_TYPE_NORMAL   : 0x2,
-    BMS_QUERY_TYPE_EXTENDED : 0x3,
-
-    BMS_QUERY_TYPE_SHORT_HEX    : '010101',
-    BMS_QUERY_TYPE_NORMAL_HEX   : '010102',
-    BMS_QUERY_TYPE_EXTENDED_HEX : '01020102',
-
-    BMS_QUERY_STATUS_OK                 : 0x00,
-    BMS_QUERY_STATUS_FAILTURE           : 0x01,
-    BMS_QUERY_STATUS_IN_CHARGER         : 0x02,
-    BMS_QUERY_STATUS_BATTERY_NOT_FOUND  : 0x03, // Or pending registration ?
-    BMS_QUERY_STATUS_PENDING_ENABLED_PERSONALITY  : 0x04,
-    BMS_QUERY_STATUS_TARGET_NOT_REGISTERED     : 0x05,
-    BMS_QUERY_STATUS_SOURCE_NOT_REGISTERED     : 0x06,
-    BMS_QUERY_STATUS_NON_IMPRES         : 0x07,
-    BMS_QUERY_STATUS_INVALID_REQUEST_SYNTAX         : 0x08,
-    //Is it real codes ?
-    BMS_QUERY_STATUS_INDEX_OUT_OF_RANGE         : 0x09,
-    BMS_QUERY_STATUS_RESPONSE_TIMEOUT         : 0x0A,
-    BMS_QUERY_STATUS_BATTERY_DATA_ERROR        : 0x0B,
-    BMS_QUERY_STATUS_BATTERY_NOT_MATCH       : 0x0C,
-
-
-
     LRRP_ImmediateLocationRequest : 0x05,
     LRRP_ImmediateLocationResponse : 0x07,
     LRRP_TriggeredLocationStartRequest : 0x09,

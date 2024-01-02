@@ -7,7 +7,7 @@ const EventEmitter = require("events");
 
 
 //TODO: TMS service
-
+//TODO: Do not re-register and query NON-IMPRES(0x07) batteries
 class DMRServices extends EventEmitter  {
     static ARS_STATUS_UNREGISTERED = 0;
     static ARS_STATUS_REGISTERED = 1;
@@ -147,36 +147,35 @@ class DMRServices extends EventEmitter  {
         if(!this.options.BMSEnabled)
             return;
 
-        let bms = Protocols.BMS.from(ipPacket.payload);
+        let bms = Protocols.BMS.Packet.from(ipPacket.payload);
 
         if(bms===null)
             return;
 
-        if(bms.type===Protocols.BMS.TYPE_REGISTRATION) {
-            this.status[ipPacket.getDMRSrc()].BMS.serial = bms.serial;
+        if(bms instanceof Protocols.BMS.Registration) {
+            this.status[ipPacket.getDMRSrc()].BMS.serial = bms.batterySerial;
             this.statusUpdated(ipPacket.getDMRSrc());
 
-            let replyBMS = new Protocols.BMS();
+            let replyBMS = new Protocols.BMS.RegistrationAck();
 
-            replyBMS.type = Protocols.BMS.TYPE_REGISTRATION_ACK;
-            replyBMS.registerHash = Protocols.BMS.getRegisterHash(bms.registerHash);
+            replyBMS.hash = Buffer.from(Protocols.BMS.getRegisterHash(Array.from(bms.hash)));
             await delay(1000); //Wait for the confirmation
             this.sendIPPacket(replyBMS.getBuffer(), ipPacket.src_addr, ipPacket.dst_port, ipPacket.src_port);
             await delay(1000);
             this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_REGISTERED);
-        } else if(bms.type===Protocols.BMS.TYPE_QUERY_REPLY) {
-            this.status[ipPacket.getDMRSrc()].BMS.code = bms.code;
+        } else if(bms.type instanceof Protocols.BMS.QueryReply) {
+            this.status[ipPacket.getDMRSrc()].BMS.code = bms.status;
 
-            if(bms.code===6) {//TODO: use constant
+            if(bms.status===Protocols.BMS.QueryReply.STATUS_SOURCE_NOT_REGISTERED) {
                 this.status[ipPacket.getDMRSrc()].BMS.retryCount = 0;
                 this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_UNREGISTERED);
             } else {
                 this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_RECEIVED);
             }
 
-            if(bms.code===0) {//TODO: use constant
-                this.status[ipPacket.getDMRSrc()].BMS.serial = bms.serial;
-                this.status[ipPacket.getDMRSrc()].BMS.charge = bms.charge;
+            if(bms.status===Protocols.BMS.QueryReply.STATUS_OK) {
+                this.status[ipPacket.getDMRSrc()].BMS.serial = bms.batteryData.originalSerialNumber;
+                this.status[ipPacket.getDMRSrc()].BMS.charge = bms.batteryData.remainingCapacityRatio;
                 this.statusUpdated(ipPacket.getDMRSrc());
 
                 this.emit(DMRServices.EVENT_BATTERY, ipPacket.getDMRSrc(), bms, ipPacket.payload);
@@ -291,9 +290,8 @@ class DMRServices extends EventEmitter  {
         this.status[dmrID].BMS.retryCount++;
         this.setBMSStatus(dmrID, DMRServices.BMS_STATUS_DISCOVERY_SENT);
 
-        let bms = new Protocols.BMS();
+        let bms = new Protocols.BMS.Discovery();
 
-        bms.type = Protocols.BMS.TYPE_DISCOVERY;
 
         let dstAddr = (Network.NETWORK_RADIO<<24) | dmrID;
 
@@ -303,11 +301,10 @@ class DMRServices extends EventEmitter  {
     queryBMS(dmrID) {
         this.status[dmrID].BMS.lastQuery = getTime();
         this.statusUpdated(dmrID);
-        let bms = new Protocols.BMS();
+        let bms = new Protocols.BMS.Query();
 
-        bms.type = Protocols.BMS.TYPE_QUERY_REQUEST;
-        bms.reqId = Math.round(Math.random()*32768);
-        bms.queryType = Protocols.BMS.QUERY_TYPE_NORMAL;
+
+        bms.reqType = Protocols.BMS.BatteryData.OTA_DATATYPE_DYNAMIC;
 
         let dstAddr = (Network.NETWORK_RADIO<<24) | dmrID;
 
