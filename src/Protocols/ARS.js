@@ -3,7 +3,15 @@
 class ARS {
     static DEVICE_REGISTRATION = 0x0;
     static DEVICE_DEREGISTRATION = 0x1;
+    static NAME_RESOLUTION = 0x2;
+    static ADDRESS_RESOLUTION = 0x3;
+    static DEVICE_QUERY = 0x4;
+    static USER_REGISTRATION = 0x5;
+    static USER_DEREGISTRATION = 0x6;
+    static USER_REGISTRATION_ACK = 0x7;
+    static KEEPALIVE = 0x8;
     static REGISTRATION_ACKNOWLEDGEMENT = 0xF;
+
     constructor() {
         this.extended = 0;
         this.ack = 0;
