@@ -8,4 +8,5 @@ module.exports = {
 
 
     DMRConst: require('./DMRConst'),
+    BitUtils: require('./BitUtils'),
 };

@@ -3,6 +3,7 @@ const DMR = require('../../DMR');
 const Golay2087 = require('../../Encoders/Golay2087');
 const Trellis = require('../../Encoders/Trellis');
 const BPTC19696 = require('../../Encoders/BPTC19696');
+const BitUtils = require("../../BitUtils");
 
 class VoiceData extends Packet {
     static CALL_TYPE_GROUP      = 0;
@@ -111,7 +112,7 @@ class VoiceData extends Packet {
 
         let colorCode = (code >> 4) & 0x0F;
         let dataType = (code >> 0) & 0x0F;
-        let bitsStr = this.bufferToBits(buffer);
+        let bitsStr = BitUtils.bufferToBitsStr(buffer);
         let dataBits;
 
         if(dataType===DMR.Packet.DATA_TYPE_CONFIRMED_DATA_CONT) {
@@ -122,45 +123,27 @@ class VoiceData extends Packet {
             dataBits = BPTC19696.decode(bitsStr.substring(0, 98) + bitsStr.substring(166))
         }
 
-        return [DMR.Packet.from(this.bitsToBuffer(dataBits), dataType), colorCode];
+        return [DMR.Packet.from(BitUtils.bitsStrToBuffer(dataBits), dataType), colorCode];
     }
 
     static encodeDMR(dmr, colorCode) {
         let slotType =  Golay2087.encode(((colorCode << 4) & 0xF0) | ((dmr.dataType << 0) & 0x0F));
 
-        let bitsSlot = this.bufferToBits(Buffer.from(slotType));
+        let bitsSlot = BitUtils.bufferToBitsStr(Buffer.from(slotType));
 
         let l_slot = bitsSlot.substr(0, 10);
         let r_slot = bitsSlot.substr(10, 10);
 
         let sync_data = '110101011101011111110111011111111101011101010111';
 
-        let bitsPayload = this.bufferToBits(dmr.getBuffer());
+        let bitsPayload = BitUtils.bufferToBitsStr(dmr.getBuffer());
 
         let encodedData = BPTC19696.encode(bitsPayload);
 
         let outPacket = encodedData.substr(0, 98) + l_slot + sync_data + r_slot + encodedData.substr(98);
 
-        return this.bitsToBuffer(outPacket);
+        return BitUtils.bitsStrToBuffer(outPacket);
     }
-
-    static bitsToBuffer(bitsStr) {
-        let buffer = Buffer.alloc(Math.ceil(bitsStr.length / 8));
-
-        for (let c = 0; c < bitsStr.length; c += 8)
-            buffer.writeUInt8(parseInt(bitsStr.substr(c, 8).padEnd(8, '0'), 2), c / 8); //padEnd need because last byte can be without trailing zeroes
-
-        return buffer;
-    };
-
-    static bufferToBits(buffer) {
-        let bitsStr = '';
-
-        for(let i = 0; i < buffer.length; i++)
-            bitsStr += ("00000000" + (buffer.readUInt8(i)>>>0).toString(2)).substr(-8);
-
-        return bitsStr;
-    };
 }
 
 
