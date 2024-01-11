@@ -23,6 +23,7 @@ Motorola MotoTRBO DMR protocols research project.
 - Hamming
 - Trellis
 - Golay 20/8/7
+- AMBE (conversion from 72 to 49 bit and vise-versa)
 
 #### Supported IP features:
 - UDP/IP4 over dmr (plain)
