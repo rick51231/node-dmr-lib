@@ -1,5 +1,5 @@
 class CRC32 {
-    static compure(buffer) {
+    static compute(buffer) {
         let crc = 0;
 
         for (let i = 0; i < buffer.length; i+=2) {

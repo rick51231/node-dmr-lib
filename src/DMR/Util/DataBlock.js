@@ -68,7 +68,7 @@ class DataBlock {
         }
 
         let bufferCrc = buffer.readUInt32LE(buffer.length-DataBlock.CRC_SIZE);
-        let computedCrc = CRC32.compure(buffer.subarray(0, endCrcOffset));
+        let computedCrc = CRC32.compute(buffer.subarray(0, endCrcOffset));
 
         if(bufferCrc!==computedCrc)
             return null;
@@ -82,7 +82,7 @@ class DataBlock {
 
         buffer.copy(tmpBuffer, 0, 0);
 
-        let crc = CRC32.compure(tmpBuffer.subarray(0, tmpBuffer.length-DataBlock.CRC_SIZE));
+        let crc = CRC32.compute(tmpBuffer.subarray(0, tmpBuffer.length-DataBlock.CRC_SIZE));
         tmpBuffer.writeUInt32LE(crc, tmpBuffer.length-DataBlock.CRC_SIZE);
 
         let dataPackets = [];
