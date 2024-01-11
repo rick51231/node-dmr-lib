@@ -5,4 +5,5 @@ module.exports.CRC16 = require('./CRC16');
 module.exports.CRC32 = require('./CRC32');
 module.exports.Hamming = require('./Hamming');
 module.exports.QR1676 = require('./QR1676');
+module.exports.RS129 = require('./RS129');
 module.exports.Trellis = require('./Trellis');
