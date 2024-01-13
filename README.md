@@ -16,6 +16,7 @@ Motorola MotoTRBO DMR protocols research project.
 - IPSCPeer - IPSC peer node, maintains master connection and provides DMR sending/receiving.
 - DMRIPGateway - DMR to UDP/IP gateway. Connects to the IPSCPeer.
 - DMRServices - ARS/LRRP/BMS service. Connects to the DMRIPGateway.
+- AMBEClient - Client for AMBE server for encoding/decoding voice frames ([example](https://github.com/rick51231/ambe-server-docker))
 
 #### Supported encodings/checksums:
 - BPTC 196/96
