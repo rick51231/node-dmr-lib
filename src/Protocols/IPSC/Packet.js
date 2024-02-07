@@ -33,8 +33,13 @@ class Packet {
 
     static SYSTEM_MAP_REQ = 0x9C;
     static SYSTEM_MAP_REPLY = 0x9D;
+    static UNKNOWN_9E = 0x9E; //Extended peer registration ?
 
     static NAI_DATA = 0xb2; //TODO: check MNIS packet
+
+    //CPS connect request / 0x14 = repeater id and peer id, 0x97 = cps id, 0xc350 = 50000 tcp port. Possible PeerMode + PeerFlags
+    static REMOTE_PROGRAMMING_REQ = 0xE0; // e000000097000000970000001400000000c3500000010000
+    static REMOTE_PROGRAMMING_REPLY = 0xE1; // e100000014000000140000009704 // target + initiator + result ?
 
     type;
     peerId = 0; //Can first by be a site id ????
