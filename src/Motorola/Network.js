@@ -15,11 +15,14 @@ class Network {
 
     static PORTID_NEW_CONSTANT = 94; //New radios (aka DP4000) uses "DMR Standart" compression with this portId offset
 
-    static PORT_LRRP      = 4001;
-    static PORT_ARS       = 4005;
-    static PORT_TMS       = 4007;
-    static PORT_BMS       = 4012;
-    static PORT_TELEMETRY = 4008;
+    static PORT_LRRP      = 4001; // Location
+    static PORT_ARS       = 4005; // Registration
+    static PORT_TMS       = 4007; // Text messages
+    static PORT_TLM       = 4008; // Telemetry
+    static PORT_BMS       = 4012; // Battery management
+    static PORT_JMS       = 4013; // Job tickets ?
+    static PORT_LIP       = 5017; // Indoor location ?
+    static PORT_XNL       = 8002; // XNL/XCMP TCP connection
 
 
     static AddressID2Network(addressId) {
