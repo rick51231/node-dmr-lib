@@ -4,6 +4,8 @@
 
 // Test data: ACAA40200044408080 E5A8C54557061DEC0A
 
+const BitUtils = require("../BitUtils");
+
 class AMBE {
     static rW = [
         0, 1, 0, 1, 0, 1,
@@ -52,7 +54,8 @@ class AMBE {
         let bitArray = ambe49.split('').map(i => i==="1"); //Compatibility mode
         let ambe_fr = this.convert49BitAmbeTo72BitFrames(bitArray);
         ambe_fr = this.demodulateAmbe3600x2450(ambe_fr);
-        return this.interleave(ambe_fr);
+        let byteArray = this.interleave(ambe_fr);
+        return BitUtils.bufferToBitsStr(Buffer.from(byteArray));
     }
 
     static convert49BitAmbeTo72BitFrames(ambe_d) {
