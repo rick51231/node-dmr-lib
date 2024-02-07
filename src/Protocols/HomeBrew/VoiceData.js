@@ -4,6 +4,7 @@ const Golay2087 = require('../../Encoders/Golay2087');
 const Trellis = require('../../Encoders/Trellis');
 const BPTC19696 = require('../../Encoders/BPTC19696');
 const BitUtils = require("../../BitUtils");
+const VoicePayload = require("./types/VoicePayload");
 
 class VoiceData extends Packet {
     static CALL_TYPE_GROUP      = 0;
@@ -51,7 +52,13 @@ class VoiceData extends Packet {
         dmrd.stream_id = buffer.readUInt32BE(12);
 
         let data = buffer.slice(16, 49);
-        [dmrd.data, dmrd.colorCode] = this.decodeDMR(data);
+        dmrd.payload = data.toString('hex');
+        if(dmrd.frame_type===this.FRAME_TYPE_DATA_SYNC) {
+            [dmrd.data, dmrd.colorCode] = this.decodeDMR(data);
+        } else {
+            dmrd.data = VoicePayload.from(data, dmrd.frame_type===this.FRAME_TYPE_VOICE_SYNC);
+            dmrd.colorCode = dmrd.data.colorCode;
+        }
 
         if(dmrd.data===null)
             dmrd.data = data;
@@ -87,6 +94,8 @@ class VoiceData extends Packet {
 
         if(this.data instanceof Buffer)
             this.data.copy(buffer, 16, 0);
+        else if(this.frame_type !== VoiceData.FRAME_TYPE_DATA_SYNC)
+            this.data.getBuffer().copy(buffer, 16, 0);
         else
             VoiceData.encodeDMR(this.data, this.colorCode).copy(buffer, 16, 0);
 
@@ -95,6 +104,7 @@ class VoiceData extends Packet {
 
         return super.getBuffer(buffer);
     }
+
 
     static decodeDMR(buffer) {
         let slotType = [];

@@ -1,4 +1,5 @@
 module.exports.Packet = require('./Packet');
+module.exports.Types = require('./types');
 
 module.exports.GatewayPing = require('./GatewayPing');
 module.exports.GatewayRegReq = require('./GatewayRegReq');

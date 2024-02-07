@@ -16,6 +16,22 @@ class BitUtils {
 
         return bitsStr;
     };
+
+    static bitsArrayToStr(bitsArray) {
+        return bitsArray.map(i => i ? '1' : '0').join('');
+    }
+
+    static strToBitsArray(bitsStr) {
+        return bitsStr.split('').map(i => i==="1");
+    }
+
+    static bufferToBitsArray(buffer) {
+        return this.strToBitsArray(this.bufferToBitsStr(buffer));
+    }
+
+    static bitsArrayToBuffer(bitsArray) {
+        return this.bitsStrToBuffer(this.bitsArrayToStr(bitsArray));
+    }
 }
 
 module.exports = BitUtils;

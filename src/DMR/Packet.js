@@ -21,13 +21,16 @@ class Packet {
         let packetClass;
 
         switch(dataType) {
+            case Packet.DATA_TYPE_VOICE_HEADER:
+            case Packet.DATA_TYPE_VOICE_TERMINATOR:
+                packetClass = require('./VoiceBase');
+                break;
             case Packet.DATA_TYPE_CSBK:
                 packetClass = require('./CSBK');
                 break;
             case Packet.DATA_TYPE_DATA_HEADER:
                 packetClass = require('./DataHeader');
                 break;
-
             default:
                 packetClass = require('./Raw');
         }
