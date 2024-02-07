@@ -83,7 +83,7 @@ class VoiceDataCall extends Packet {
         buffer.writeUInt8((this.src_id>>16) & 0xFF, 1); //src HI
         buffer.writeUInt16BE(this.src_id & 0xFFFF, 2);
 
-        buffer.writeUInt8((this.dst_id>>16) & 0xFF, 4); //src HI
+        buffer.writeUInt8((this.dst_id>>16) & 0xFF, 4); //dst HI
         buffer.writeUInt16BE(this.dst_id & 0xFFFF, 5);
 
         buffer.writeUInt8(this.callPriority, 7);
