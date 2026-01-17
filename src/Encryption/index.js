@@ -1,0 +1,1 @@
+module.exports.ARC4 = require('./ARC4');

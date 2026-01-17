@@ -28,6 +28,9 @@ Motorola MotoTRBO DMR protocols research project.
 - Quadratic residue (QR) 16/7/6
 - Reed-Solomon 12/9
 
+#### Supported encryption:
+- ARC4
+
 #### Supported IP features:
 - UDP/IP4 over dmr (plain)
 - UDP/IP4 over dmr (DMR Standart header compression)
