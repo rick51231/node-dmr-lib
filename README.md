@@ -32,6 +32,8 @@ Motorola MotoTRBO DMR protocols research project.
 - ARC4
 
 #### Supported IP features:
+- ICMP/IP4 over dmr (plain)
+- TCP/IP4 over dmr (plain)
 - UDP/IP4 over dmr (plain)
 - UDP/IP4 over dmr (DMR Standart header compression)
 - UDP/IP4 over dmr (Advantage header compression)

@@ -109,9 +109,8 @@ async function sendSms() {
     tms.msgId = 145;
     tms.text = 'Hello';
 
-    let ip = new IP.IP4Packet();
+    let ip = new IP.IPUDPPacket();
 
-    ip.protocol = IP.IP4Packet.PROTOCOL_UDP;
     ip.identification = 124;
     ip.src_addr = src_addr;
     ip.dst_addr = dst_addr;

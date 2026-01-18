@@ -49,9 +49,9 @@ class DMRIPGateway extends EventEmitter {
         if(header.serviceAccessPoint===DMR.DataHeader.SAP_IP_PACKET)
             ip = IP.IP4Packet.from(buffer);
         else if(header.serviceAccessPoint===DMR.DataHeader.SAP_UDP_COMPRESSION)
-            ip = IP.IP4Packet.fromCompressedUDPDMRStandart(buffer, header.src_id, header.dst_id);
+            ip = IP.IPUDPPacket.fromCompressedUDPDMRStandart(buffer, header.src_id, header.dst_id);
         else if(header.serviceAccessPoint===DMR.DataHeader.SAP_PROPRIETARY && secondHeader!==null && secondHeader.serviceAccessPoint===DMR.DataHeader.SAP_UDP_COMPRESSION_MOTO) {
-            ip = IP.IP4Packet.fromCompressedUDPAdvantage(buffer, header.src_id, header.dst_id, secondHeader);
+            ip = IP.IPUDPPacket.fromCompressedUDPAdvantage(buffer, header.src_id, header.dst_id, secondHeader);
         }
 
         if(ip===null)

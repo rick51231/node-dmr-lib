@@ -1,6 +1,6 @@
 const DMRIPGateway = require("./DMRIPGateway");
 const Protocols = require("../Protocols");
-const IP4Packet = require("../IP/IP4Packet");
+const { IPUDPPacket } = require("../IP");
 const Network = require("../Motorola/Network");
 const { getTime, delay } = require('./Utils');
 const EventEmitter = require("events");
@@ -69,7 +69,7 @@ class DMRServices extends EventEmitter  {
         if(ipPacket.getDMRDst()!==this.serviceId)
             return;
 
-        if(ipPacket.protocol!==IP4Packet.PROTOCOL_UDP)
+        if(!(ipPacket instanceof IPUDPPacket))
             return;
 
         if(this.status[ipPacket.getDMRSrc()]===undefined)
@@ -192,7 +192,7 @@ class DMRServices extends EventEmitter  {
     }
 
     sendIPPacket(payload, dst_addr, src_port, dst_port) {
-        let ip = new IP4Packet();
+        let ip = new IPUDPPacket();
 
         ip.src_port = src_port;
         ip.dst_port = dst_port;
@@ -205,7 +205,6 @@ class DMRServices extends EventEmitter  {
         else
             this.identificationCounter++;
 
-        ip.protocol = IP4Packet.PROTOCOL_UDP;
         ip.identification = this.identificationCounter;
         ip.payload = payload;
 
