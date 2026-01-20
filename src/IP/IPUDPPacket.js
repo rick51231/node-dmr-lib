@@ -1,5 +1,6 @@
 const IP4Packet = require("./IP4Packet");
 const MotorolaNetwork = require("../Motorola/Network");
+const ProprietaryCompressed = require("../DMR/DataHeader/ProprietaryCompressed");
 
 class IPUDPPacket extends IP4Packet {
     src_port = 0;
@@ -142,6 +143,100 @@ class IPUDPPacket extends IP4Packet {
         packet.payload = buffer.slice(dataOffset, buffer.length);
 
         return packet;
+    }
+
+    getCompressedUDPAdvantageWL() {
+        let [payload, proprietaryHeader] = this.getCompressedUDPAdvantage();
+
+        let buffer = Buffer.alloc(4);
+
+        buffer.writeUInt8((proprietaryHeader.SAID<<4)|(proprietaryHeader.DAID), 0);
+        buffer.writeUInt8((proprietaryHeader.SPID<<4)|(proprietaryHeader.DPID), 1);
+        buffer.writeUInt16BE(proprietaryHeader.ipIdent, 2);
+
+        return Buffer.concat([buffer, payload]);
+    }
+
+    getCompressedUDPAdvantage() {
+        let buffers = [];
+        let proprietaryHeader = new ProprietaryCompressed();
+
+        proprietaryHeader.ipIdent = this.identification;
+
+        let sourcePrefix = (this.src_addr >>> 24) & 0xFF;
+        let destPrefix = (this.dst_addr >>> 24) & 0xFF;
+
+        proprietaryHeader.SAID = MotorolaNetwork.Network2AddressID(sourcePrefix);
+        proprietaryHeader.DAID = MotorolaNetwork.Network2AddressID(destPrefix);
+
+        proprietaryHeader.SPID = MotorolaNetwork.Port2PortID(this.src_port);
+        if(proprietaryHeader.SPID===null) {
+            proprietaryHeader.SPID = 0;
+            let b = Buffer.alloc(2);
+            b.writeUInt16BE(this.src_port, 0);
+            buffers.push(b);
+        }
+
+        proprietaryHeader.DPID = MotorolaNetwork.Port2PortID(this.dst_port);
+        if(proprietaryHeader.DPID===null) {
+            proprietaryHeader.DPID = 0;
+            let b = Buffer.alloc(2);
+            b.writeUInt16BE(this.dst_port, 0);
+            buffers.push(b);
+        }
+
+        buffers.push(this.payload);
+
+        return [
+            Buffer.concat(buffers),
+            proprietaryHeader
+        ];
+    }
+
+    getCompressedUDPDMRStandart() {
+        let buffers = [];
+
+        let bIdent = Buffer.alloc(2);
+        bIdent.writeUInt16BE(this.identification);
+        buffers.push(bIdent);
+
+        let sourcePrefix = (this.src_addr >>> 24) & 0xFF;
+        let destPrefix = (this.dst_addr >>> 24) & 0xFF;
+
+        let SAID = MotorolaNetwork.Network2AddressID(sourcePrefix);
+        let DAID = MotorolaNetwork.Network2AddressID(destPrefix);
+
+
+        buffers.push(Buffer.from([(SAID<<4) | DAID]));
+
+        let SPID = MotorolaNetwork.Port2PortID(this.src_port, true);
+        let DPID = MotorolaNetwork.Port2PortID(this.dst_port, true);
+
+        if(SPID===null)
+            SPID = 0;
+        if(DPID===null)
+            DPID = 0;
+
+        let b = Buffer.alloc(2);
+        b.writeUInt8(SPID, 0);
+        b.writeUInt8(DPID, 1);
+        buffers.push(b);
+
+        if(SPID===0){
+            let b = Buffer.alloc(2);
+            b.writeUInt16BE(this.src_port, 0);
+            buffers.push(b);
+        }
+
+        if(DPID===0){
+            let b = Buffer.alloc(2);
+            b.writeUInt16BE(this.dst_port, 0);
+            buffers.push(b);
+        }
+
+        buffers.push(this.payload);
+
+        return Buffer.concat(buffers);
     }
 
     getBuffer() {
