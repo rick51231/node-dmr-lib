@@ -4,6 +4,9 @@ module.exports.MasterAliveReq = require('./MasterAliveReq');
 module.exports.MasterRegReply = require('./MasterRegReply');
 module.exports.MasterRegReq = require('./MasterRegReq');
 
+module.exports.PeerAliveReply = require('./PeerAliveReply');
+module.exports.PeerAliveReq = require('./PeerAliveReq');
+module.exports.PeerListReq = require('./PeerListReq');
 module.exports.PeerListReply = require('./PeerListReply');
 
 module.exports.PrivateData = require('./PrivateData');

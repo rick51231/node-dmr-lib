@@ -2,6 +2,8 @@ const Packet = require('./Packet');
 const RtpPacket = require('./types/Rtp');
 const DMRPayload = require('./types/DMRPayload');
 
+//TODO: 80000000140000274a0000ff00000064a500805dfab805f327a00000000001000008100000600000080000ff00274a000000 - invalid with possible included LRRP on PTT press
+
 class VoiceDataCall extends Packet {
     streamId = 0; //CallSeq
     src_id = 0;

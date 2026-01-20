@@ -80,8 +80,23 @@ class Packet {
             case Packet.MASTER_REG_REQ:
                 packetClass = require('./MasterRegReq');
                 break;
+            case Packet.PEER_LIST_REQ:
+                packetClass = require('./PeerListReq');
+                break;
             case Packet.PEER_LIST_REPLY:
                 packetClass = require('./PeerListReply');
+                break;
+            case Packet.PEER_ALIVE_REPLY:
+                packetClass = require('./PeerAliveReply');
+                break;
+            case Packet.PEER_ALIVE_REQ:
+                packetClass = require('./PeerAliveReq');
+                break;
+             case Packet.PEER_REGISTER_REQ:
+                packetClass = require('./PeerRegReq');
+                break;
+            case Packet.PEER_REGISTER_REPLY:
+                packetClass = require('./PeerRegReply');
                 break;
             case Packet.MASTER_REG_REPLY:
                 packetClass = require('./MasterRegReply');
