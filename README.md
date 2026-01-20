@@ -43,6 +43,9 @@ Motorola MotoTRBO DMR protocols research project.
 - CSBK (CallAlertACK, CallEmergency, Preamble)
 - Rate 1/2 and 3/4 data
 - DataBlock with CRC32 (encapsulates IP packets)
+- Voice header and terminator including Link Control (LC) data
+- Voice data (HomeBrew/IPSC payload)
+- PI header
 
 Some development information can be found in [dev](dev) folder.
 
