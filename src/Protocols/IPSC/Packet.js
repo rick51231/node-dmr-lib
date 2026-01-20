@@ -1,4 +1,3 @@
-
 class Packet {
     static REPEATER_CALL_TRANSMISSION = 0x61;
     static REPEATER_CALL_CONTROL = 0x62;
@@ -35,7 +34,7 @@ class Packet {
     static SYSTEM_MAP_REPLY = 0x9D;
     static UNKNOWN_9E = 0x9E; //Extended peer registration ?
 
-    static NAI_DATA = 0xb2; //TODO: check MNIS packet
+    static WIRELINE = 0xb2; //MNIS Data and possbile voice
 
     //CPS connect request / 0x14 = repeater id and peer id, 0x97 = cps id, 0xc350 = 50000 tcp port. Possible PeerMode + PeerFlags
     static REMOTE_PROGRAMMING_REQ = 0xE0; // e000000097000000970000001400000000c3500000010000
@@ -109,6 +108,9 @@ class Packet {
                 break;
             case Packet.DEREGISTER_REQ:
                 packetClass = require('./DeregisterReq');
+                break;
+            case Packet.WIRELINE:
+                packetClass = require('./Wireline');
                 break;
             default:
                 packetClass = require('./Raw');
