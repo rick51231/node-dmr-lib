@@ -11,6 +11,7 @@ module.exports.DataHeader.ProprietaryCompressed = require('./DataHeader/Propriet
 module.exports.DataHeader.Response = require('./DataHeader/Response');
 module.exports.DataHeader.Unconfirmed = require('./DataHeader/Unconfirmed');
 
+module.exports.PIHeader = require('./PIHeader');
 module.exports.VoiceBase = require('./VoiceBase');
 module.exports.VoiceTerminator = require('./VoiceTerminator');
 module.exports.VoiceHeader = require('./VoiceHeader');

@@ -31,6 +31,9 @@ class Packet {
             case Packet.DATA_TYPE_DATA_HEADER:
                 packetClass = require('./DataHeader');
                 break;
+            case Packet.DATA_TYPE_PI_HEADER:
+                packetClass = require('./PIHeader');
+                break;
             default:
                 packetClass = require('./Raw');
         }
