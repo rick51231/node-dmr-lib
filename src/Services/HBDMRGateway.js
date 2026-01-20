@@ -10,6 +10,7 @@ class HBDMRGateway extends EventEmitter {
     static STATE_OK = 1;
 
     static EVENT_DMRDATA = 'dmrdata';
+    static EVENT_VOICEDATA = 'voicedata';
     static EVENT_DATA = 'data';
     static EVENT_CONNECTED = 'connected'; //TODO: fix it ?
     // static EVENT_CLOSED = 'closed';
@@ -22,6 +23,7 @@ class HBDMRGateway extends EventEmitter {
     streamId = Math.round(getTime()/1000);
     packetSeq = 0;
 
+    voiceLcData = []; //For both slots
     sendDataBuffer = [];
     lastDataPacket = getTime();
 
@@ -96,7 +98,33 @@ class HBDMRGateway extends EventEmitter {
         if(packet instanceof HomeBrew.VoiceData) {
             this.lastDataPacket = getTime();
 
-            if(packet.frame_type === HomeBrew.VoiceData.FRAME_TYPE_DATA_SYNC)
+            if(packet.frame_type === HomeBrew.VoiceData.FRAME_TYPE_DATA_SYNC) {
+                //TODO:
+                /*
+                if(packet.dmrPayload.pduDataType === DMRPayload.DATA_TYPE_VOICE_HEADER)
+                this.voiceLcData[packet.slot] = packet.dmrPayload.data.LC;
+            else if(packet.dmrPayload.pduDataType === DMRPayload.DATA_TYPE_VOICE && packet.dmrPayload.embLCPresent)
+                this.voiceLcData[packet.slot] = packet.dmrPayload.embLC;
+
+            if(this.voiceLcData[packet.slot]!==undefined) {
+                let ambe = [];
+
+                if(packet.dmrPayload.pduDataType === DMRPayload.DATA_TYPE_VOICE) {
+                    ambe = [
+                        packet.dmrPayload.ambe1,
+                        packet.dmrPayload.ambe2,
+                        packet.dmrPayload.ambe3
+                    ];
+                }
+                this.emit(IPSCPeer.EVENT_VOICEDATA, {
+                    lc: this.voiceLcData[packet.slot],
+                    dataType: packet.dmrPayload.pduDataType,
+                    dstIsGroup:  packet instanceof IPSC.GroupVoice,
+                    ambe:ambe,
+                    slot: packet.slot
+                })
+            }
+                 */
                 this.emit(HBDMRGateway.EVENT_DMRDATA, {
                     data: packet.data,
                     src_id: packet.src_id,
@@ -104,6 +132,7 @@ class HBDMRGateway extends EventEmitter {
                     dstIsGroup: packet.call_type === HomeBrew.VoiceData.CALL_TYPE_GROUP,
                     slot: packet.slot
                 });
+            }
         }
     }
 

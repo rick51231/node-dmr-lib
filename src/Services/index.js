@@ -4,3 +4,4 @@ module.exports.DMRServices = require('./DMRServices');
 module.exports.HBDMRGateway = require('./HBDMRGateway');
 module.exports.IPSCPeer = require('./IPSCPeer');
 module.exports.Utils = require('./Utils');
+module.exports.WLIPGateway = require('./WLIPGateway');

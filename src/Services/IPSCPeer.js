@@ -1,17 +1,21 @@
 const IPSC = require('../Protocols/IPSC');
-const XCMP = require('../Protocols/XCMP');
 const XNL = require('../Protocols/XNL');
 const EventEmitter = require('events');
 const udp = require("dgram");
 const { getTime, delay } = require('./Utils');
+const {DMRPayload, WirelineRegistrationEntry} = require("../Protocols/IPSC/types");
+const  { Wireline } = require("../Protocols/IPSC");
 
 class IPSCPeer extends EventEmitter {
     static STATE_NONE = 0;
     static STATE_OK = 1;
     static STATE_CONNECTING = 2;
     static STATE_XNL_INIT = 3;
+    static STATE_WL_INIT = 3;
 
     static EVENT_DMRDATA = 'dmrdata';
+    static EVENT_VOICEDATA = 'voicedata';
+    static EVENT_WLDATA = 'wldata';
     static EVENT_DATA = 'data';
     static EVENT_XCMPDATA = 'xcmpdata';
     static EVENT_CONNECTED = 'connected';
@@ -28,11 +32,14 @@ class IPSCPeer extends EventEmitter {
     xnlRequestFlag = 0;
     xnlPeerId = 0;
     xnlLocalId = 0;
+    voiceLcData = []; //For both slots
+    wlRevertPeer = ['', 0];
 
     isTXActive = false;
     sendDataBuffer = [];
     lastDataPacket = getTime();
     xnlStarted = getTime();
+    wlStarted = getTime();
 
     constructor(options) { //TODO: auth support
         super();
@@ -46,7 +53,11 @@ class IPSCPeer extends EventEmitter {
             peerProtocol: options.peerProtocol ?? new IPSC.Types.PeerProtocol(),
             sendDataWhenActive: options.sendDataWhenActive ?? false,
             xnlEnabled: options.xnlEnabled ?? false,
-            xnlKey: options.xnlKey ?? []
+            xnlKey: options.xnlKey ?? [],
+            wlEnabled: options.wlEnabled ?? false,
+            wlId: options.wlId ?? 0,
+            wlCapPusRevert: options.wlCapPusRevert ?? false,
+            wlKey: options.wlKey ?? [Buffer.alloc(0), Buffer.alloc(0)],
         };
 
         this.socket = udp.createSocket('udp4');
@@ -54,8 +65,8 @@ class IPSCPeer extends EventEmitter {
         this.socket.on('close', () => {
            // Is it possible on udp socket ?
         });
-        this.socket.on('message', (msg) => {
-            this.onData(msg);
+        this.socket.on('message', (msg, addr) => {
+            this.onData(msg, addr);
         });
 
         setTimeout(() => {
@@ -78,6 +89,42 @@ class IPSCPeer extends EventEmitter {
         }, 15000);
     }
 
+    initWireline() {
+        this.state = IPSCPeer.STATE_WL_INIT;
+
+        let initPacket = new Wireline.RegistrationRequest();
+        initPacket.slots = 3;
+        initPacket.pduId = 2352093212;
+        initPacket.id = 1;
+        initPacket.channelStatusSubscribe = true;
+        initPacket.unknownSubscribe = true;
+
+        let entry1 = new WirelineRegistrationEntry();
+        entry1.addressType = WirelineRegistrationEntry.ADDRESS_TYPE_INDIVIDUAL;
+        entry1.rangeStart = this.options.wlId;
+        entry1.rangeEnd = this.options.wlId;
+        entry1.dataRegistration = true;
+        let entry2 = new WirelineRegistrationEntry();
+        entry2.addressType = WirelineRegistrationEntry.ADDRESS_TYPE_ALL_TALKGROUPS;
+        entry2.rangeStart = 0;
+        entry2.rangeEnd = 0;
+        entry2.dataRegistration = true;
+
+        initPacket.entries = [
+            entry1,
+            entry2,
+        ];
+
+        this.send(initPacket);
+
+        this.wlStarted = getTime();
+    }
+
+    initDone() {
+        this.state = IPSCPeer.STATE_OK;
+        this.emit(IPSCPeer.EVENT_CONNECTED);
+    }
+
     close() {
         if(this.state===IPSCPeer.STATE_NONE)
             return;
@@ -92,23 +139,37 @@ class IPSCPeer extends EventEmitter {
         this.emit(IPSCPeer.EVENT_CLOSED);
     }
 
-    send(packet) {
+    send(packet, isRevert=false) {
         let buffer;
         if(packet instanceof IPSC.Packet) {
             packet.peerId = this.options.peerId;
-            buffer = packet.getBuffer();
+
+            if(packet instanceof Wireline) {
+                packet.currentVersion = 5;
+                packet.oldestVersion = 1;
+
+                buffer = packet.getSignedBuffer(this.options.wlKey[0], this.options.wlKey[1]);
+            }  else {
+                buffer = packet.getBuffer();
+            }
         } else if(packet instanceof Buffer) {
             buffer = packet;
         } else {
             return;
         }
 
-        this.socket.send(buffer, this.options.port, this.options.host, (error) => {
+        if(isRevert && this.wlRevertPeer[0]!=='' && this.wlRevertPeer[1] > 0) {
+            this.socket.send(buffer, this.wlRevertPeer[1], this.wlRevertPeer[0], (error) => {
 
-        });
+            });
+        } else {
+            this.socket.send(buffer, this.options.port, this.options.host, (error) => {
+
+            });
+        }
     }
 
-    onData(buffer) {
+    onData(buffer, addr) {
         if(this.state===IPSCPeer.STATE_NONE)
             return;
         // console.log('D: '+buffer.toString('hex'));
@@ -126,9 +187,10 @@ class IPSCPeer extends EventEmitter {
                 this.xnlStarted = getTime();
                 let xnl = new XNL(XNL.OPCODE_DEVICE_MASTER_QUERY);
                 this.sendXNL(xnl);
+            } else if(this.options.wlEnabled) {
+                this.initWireline();
             } else {
-                this.state = IPSCPeer.STATE_OK;
-                this.emit(IPSCPeer.EVENT_CONNECTED);
+                this.initDone();
             }
 
             return;
@@ -139,8 +201,33 @@ class IPSCPeer extends EventEmitter {
             return;
         }
 
+        if(packet instanceof  IPSC.PeerRegReq || packet instanceof IPSC.PeerAliveReq) {
+            if(this.options.wlEnabled && this.options.wlCapPusRevert) {
+                this.wlRevertPeer[0] = addr.address;
+                this.wlRevertPeer[1] = addr.port;
+
+                if(this.state===IPSCPeer.STATE_WL_INIT)
+                    this.initDone();
+
+                let pkt;
+                if(packet instanceof  IPSC.PeerRegReq)
+                    pkt = new IPSC.PeerRegReply(packet.peerProtocol);
+                else
+                    pkt = new IPSC.PeerAliveReply(this.options.peerMode, this.options.peerFlags)
+
+                this.send(pkt, true);
+            }
+
+            return;
+        }
+
         if(packet instanceof IPSC.XNLPacket) {
             this.onXNLData(packet.xnl);
+            return;
+        }
+
+        if(packet instanceof IPSC.Wireline) {
+            this.onWlData(packet);
             return;
         }
 
@@ -159,6 +246,57 @@ class IPSCPeer extends EventEmitter {
                 dst_id: packet.dst_id,
                 dstIsGroup: packet instanceof  IPSC.GroupData,
                 slot: packet.slot
+            });
+        }
+
+        if(packet instanceof IPSC.PrivateVoice || packet instanceof IPSC.GroupVoice) {
+            if(packet.dmrPayload.pduDataType === DMRPayload.DATA_TYPE_VOICE_HEADER)
+                this.voiceLcData[packet.slot] = packet.dmrPayload.data.LC;
+            else if(packet.dmrPayload.pduDataType === DMRPayload.DATA_TYPE_VOICE && packet.dmrPayload.embLCPresent)
+                this.voiceLcData[packet.slot] = packet.dmrPayload.embLC;
+
+            if(this.voiceLcData[packet.slot]!==undefined) {
+                let ambe = [];
+
+                if(packet.dmrPayload.pduDataType === DMRPayload.DATA_TYPE_VOICE) {
+                    ambe = [
+                        packet.dmrPayload.ambe1,
+                        packet.dmrPayload.ambe2,
+                        packet.dmrPayload.ambe3
+                    ];
+                }
+                this.emit(IPSCPeer.EVENT_VOICEDATA, {
+                    lc: this.voiceLcData[packet.slot],
+                    dataType: packet.dmrPayload.pduDataType,
+                    dstIsGroup:  packet instanceof IPSC.GroupVoice,
+                    ambe:ambe,
+                    slot: packet.slot
+                })
+            }
+        }
+    }
+
+    onWlData(packet) {
+        if(!this.options.wlEnabled)
+            return;
+
+        if(packet instanceof Wireline.RegistrationReply) {
+            if(packet.statusType===Wireline.RegistrationReply.STATUS_TYPE_SUCCESS) {
+
+                if(this.options.wlCapPusRevert)
+                    this.send(new IPSC.PeerListReq());
+                else
+                    this.initDone();
+            } else {
+                this.close();
+            }
+
+            return;
+        }
+
+        if(packet instanceof IPSC.Wireline) {
+            this.emit(IPSCPeer.EVENT_WLDATA, {
+                data: packet
             });
         }
     }
@@ -203,7 +341,7 @@ class IPSCPeer extends EventEmitter {
                 let replyPacket = new XNL(XNL.OPCODE_DEVICE_CONNECTION_REQUEST);
                 // replyPacket.flags = 8;
                 replyPacket.dst = this.xnlPeerId;
-                replyPacket.data = Buffer.concat([Buffer.from('00000a01', 'hex'), authKey]); //TODO: make constants and enums
+                replyPacket.data = Buffer.concat([Buffer.from('00000a00', 'hex'), authKey]); //TODO: make constants and enums
 
                 this.sendXNL(replyPacket);
                 return;
@@ -212,8 +350,11 @@ class IPSCPeer extends EventEmitter {
             if (xnl.opcode === XNL.OPCODE_DEVICE_CONNECTION_REPLY) {
                 this.xnlLocalId = xnl.data.readUInt16BE(2);
 
-                this.state = IPSCPeer.STATE_OK;
-                this.emit(IPSCPeer.EVENT_CONNECTED);
+                if(this.options.wlEnabled) {
+                    this.initWireline();
+                } else {
+                    this.initDone();
+                }
             }
         }
     }

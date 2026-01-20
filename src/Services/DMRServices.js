@@ -65,7 +65,7 @@ class DMRServices extends EventEmitter  {
     }
 
     onIPPacket(ipPacket, slot) {
-
+//TODO: check for icmp port unreachable for BMS
         if(ipPacket.getDMRDst()!==this.serviceId)
             return;
 
@@ -158,12 +158,12 @@ class DMRServices extends EventEmitter  {
 
             let replyBMS = new Protocols.BMS.RegistrationAck();
 
-            replyBMS.hash = Buffer.from(Protocols.BMS.getRegisterHash(Array.from(bms.hash)));
+            replyBMS.hash = Buffer.from(Protocols.BMS.Packet.getRegisterHash(Array.from(bms.hash)));
             await delay(1000); //Wait for the confirmation
             this.sendIPPacket(replyBMS.getBuffer(), ipPacket.src_addr, ipPacket.dst_port, ipPacket.src_port);
             await delay(1000);
             this.setBMSStatus(ipPacket.getDMRSrc(), DMRServices.BMS_STATUS_REGISTERED);
-        } else if(bms.type instanceof Protocols.BMS.QueryReply) {
+        } else if(bms instanceof Protocols.BMS.QueryReply) {
             this.status[ipPacket.getDMRSrc()].BMS.code = bms.status;
 
             if(bms.status===Protocols.BMS.QueryReply.STATUS_SOURCE_NOT_REGISTERED) {
