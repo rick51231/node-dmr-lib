@@ -42,7 +42,8 @@ class LRRP {
             direction_horizontal: true,
             timeInterval: null,
             distanceInterval: null,
-            distanceMinTime: 1
+            distanceMinTime: 1,
+            triggerCondition: null
         };
 
         this.locationData = {
@@ -82,6 +83,8 @@ class LRRP {
 
                     if (len === 4)
                         lrrp.id = buffer.readInt32BE(pos);
+                    else if (len === 1)
+                        lrrp.id = buffer.readUInt8(pos);
                     else
                         lrrp.id = (buffer.readUInt8(pos) << 16) | buffer.readUInt16BE(pos + 1);
 
@@ -207,6 +210,11 @@ class LRRP {
 
                 byteArray.push(DMRConst.LRRP_REQUEST_TRIGGER_DISTANCE);
                 byteArray = byteArray.concat(LRRP.toLRRPInt(this.locationRequestParams.distanceInterval));
+            } else if(this.locationRequestParams.triggerCondition!==null) {
+                byteArray.push(DMRConst.LRRP_REQUEST_TRIGGER_INTERVAL);
+
+                byteArray.push(DMRConst.LRRP_REQUEST_TRIGGER_CONDITION);
+                byteArray = byteArray.concat(LRRP.toLRRPInt(this.locationRequestParams.triggerCondition));
             }
 
 
